@@ -239,7 +239,7 @@ path {
 /* Fonts ------------------------------------- */
 
 /*
- * Chrome renders extra-wide &nbsp; characters for the Hoefler Text font.
+ * Chrome renders extra-wide   characters for the Hoefler Text font.
  * This results in a jumping cursor when typing in both the classic editor and
  * block editor. The following font-face override fixes the issue by manually
  * inserting a custom font that includes just a Hoefler Text space replacement
@@ -263,7 +263,7 @@ Inter variable font. Usage:
 	font-weight: 100 900; /* stylelint-disable-line font-weight-notation */
 	font-style: normal;
 	font-display: swap;
-	src: url(https://sweezenn.github.io/myMtgWebsite.github.io/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2) format("woff2");
+	src: url(./assets/fonts/inter/Inter-upright-var.woff2) format("woff2");
 }
 
 @font-face {
@@ -271,7 +271,7 @@ Inter variable font. Usage:
 	font-weight: 100 900; /* stylelint-disable-line font-weight-notation */
 	font-style: italic;
 	font-display: swap;
-	src: url(https://sweezenn.github.io/myMtgWebsite.github.io/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-italic-var.woff2) format("woff2");
+	src: url(./assets/fonts/inter/Inter-italic-var.woff2) format("woff2");
 }
 
 
