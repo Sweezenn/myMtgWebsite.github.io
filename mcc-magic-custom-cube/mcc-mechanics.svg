@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="'Segoe UI',system-ui,Arial,sans-serif">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#fdf8ef"/>
+      <stop offset="100%" stop-color="#ede4d0"/>
+    </radialGradient>
+    <filter id="shadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#a07010" flood-opacity="0.22"/>
+    </filter>
+    <filter id="shadowSm" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.18"/>
+    </filter>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="960" height="540" fill="url(#bgGrad)"/>
+  <rect x="10" y="10" width="940" height="520" rx="10" fill="none" stroke="#d6b860" stroke-width="1" opacity="0.4"/>
+  <rect x="14" y="14" width="932" height="512" rx="8" fill="none" stroke="#d6b860" stroke-width="0.4" opacity="0.25"/>
+  <circle cx="480" cy="268" r="165" fill="none" stroke="#c9a030" stroke-width="0.5" stroke-dasharray="3,6" opacity="0.2"/>
+  <circle cx="480" cy="268" r="120" fill="none" stroke="#c9a030" stroke-width="0.4" stroke-dasharray="2,8" opacity="0.13"/>
+  <!-- Connection lines -->
+  <g stroke="#c9a030" stroke-width="1" opacity="0.3">
+    <line x1="480" y1="268" x2="480" y2="98"/>
+    <line x1="480" y1="268" x2="580" y2="130"/>
+    <line x1="480" y1="268" x2="642" y2="215"/>
+    <line x1="480" y1="268" x2="642" y2="321"/>
+    <line x1="480" y1="268" x2="580" y2="406"/>
+    <line x1="480" y1="268" x2="480" y2="438"/>
+    <line x1="480" y1="268" x2="380" y2="406"/>
+    <line x1="480" y1="268" x2="318" y2="321"/>
+    <line x1="480" y1="268" x2="318" y2="215"/>
+    <line x1="480" y1="268" x2="380" y2="130"/>
+  </g>
+  <!-- CENTER: Tribal 5 couleurs W U B R G (72deg each, start top) -->
+  <!-- cx=480 cy=268 r=56 -->
+  <!-- Angles: -90 -> -18(W), -18->54(U), 54->126(B), 126->198(R), 198->270(G) -->
+  <!-- W: (480,212) -> (532,251) -->
+  <!-- U: (532,251) -> (513,313) -->
+  <!-- B: (513,313) -> (447,313) -->
+  <!-- R: (447,313) -> (428,251) -->
+  <!-- G: (428,251) -> (480,212) -->
+  <g filter="url(#glow)">
+    <path d="M480,268 L480,212 A56,56,0,0,1,532,251 Z" fill="#F5EABD"/>
+    <path d="M480,268 L532,251 A56,56,0,0,1,513,313 Z" fill="#1565C0"/>
+    <path d="M480,268 L513,313 A56,56,0,0,1,447,313 Z" fill="#444444"/>
+    <path d="M480,268 L447,313 A56,56,0,0,1,428,251 Z" fill="#C62828"/>
+    <path d="M480,268 L428,251 A56,56,0,0,1,480,212 Z" fill="#2E7D32"/>
+    <circle cx="480" cy="268" r="56" fill="none" stroke="#d6b860" stroke-width="2"/>
+    <circle cx="480" cy="268" r="56" fill="none" stroke="#f5d96a" stroke-width="0.8" opacity="0.5"/>
+  </g>
+  <text x="480" y="260" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" stroke="#000" stroke-width="2.5" paint-order="stroke" letter-spacing="0.5">Tribal</text>
+  <text x="480" y="281" text-anchor="middle" font-size="10" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke" letter-spacing="2.5" font-weight="600">ARCHETYPE</text>
+  <!-- Lifelink (480,98): W(#F5EABD) B(#444) G(#2E7D32) -->
+  <g filter="url(#shadowSm)">
+    <path d="M480,98 L480,68 A30,30,0,0,1,506,113 Z" fill="#F5EABD"/>
+    <path d="M480,98 L506,113 A30,30,0,0,1,454,113 Z" fill="#444444"/>
+    <path d="M480,98 L454,113 A30,30,0,0,1,480,68 Z" fill="#2E7D32"/>
+    <circle cx="480" cy="98" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="480" y="52" text-anchor="middle" font-size="13.5" font-weight="700" fill="#2c1a00">Lifelink</text>
+  <!-- Discard (580,130): B(#444) U(#1565C0) R(#C62828) -->
+  <g filter="url(#shadowSm)">
+    <path d="M580,130 L580,100 A30,30,0,0,1,606,145 Z" fill="#444444"/>
+    <path d="M580,130 L606,145 A30,30,0,0,1,554,145 Z" fill="#1565C0"/>
+    <path d="M580,130 L554,145 A30,30,0,0,1,580,100 Z" fill="#C62828"/>
+    <circle cx="580" cy="130" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="606" y="90" text-anchor="start" font-size="13.5" font-weight="700" fill="#2c1a00">Discard</text>
+  <!-- Blink (642,215): B(#444) U(#1565C0) W(#F5EABD) -->
+  <g filter="url(#shadowSm)">
+    <path d="M642,215 L642,185 A30,30,0,0,1,668,230 Z" fill="#444444"/>
+    <path d="M642,215 L668,230 A30,30,0,0,1,616,230 Z" fill="#1565C0"/>
+    <path d="M642,215 L616,230 A30,30,0,0,1,642,185 Z" fill="#F5EABD"/>
+    <circle cx="642" cy="215" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="682" y="202" text-anchor="start" font-size="13.5" font-weight="700" fill="#2c1a00">Blink</text>
+  <!-- Modify (642,321): R(#C62828) W(#F5EABD) B(#444) -->
+  <g filter="url(#shadowSm)">
+    <path d="M642,321 L642,291 A30,30,0,0,1,668,336 Z" fill="#C62828"/>
+    <path d="M642,321 L668,336 A30,30,0,0,1,616,336 Z" fill="#F5EABD"/>
+    <path d="M642,321 L616,336 A30,30,0,0,1,642,291 Z" fill="#444444"/>
+    <circle cx="642" cy="321" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="682" y="335" text-anchor="start" font-size="13.5" font-weight="700" fill="#2c1a00">Modify</text>
+  <!-- Aura (580,406): U(#1565C0) W(#F5EABD) R(#C62828) -->
+  <g filter="url(#shadowSm)">
+    <path d="M580,406 L580,376 A30,30,0,0,1,606,421 Z" fill="#1565C0"/>
+    <path d="M580,406 L606,421 A30,30,0,0,1,554,421 Z" fill="#F5EABD"/>
+    <path d="M580,406 L554,421 A30,30,0,0,1,580,376 Z" fill="#C62828"/>
+    <circle cx="580" cy="406" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="606" y="447" text-anchor="start" font-size="13.5" font-weight="700" fill="#2c1a00">Aura</text>
+  <!-- Sacrifice (480,438): B(#444) R(#C62828) G(#2E7D32) -->
+  <g filter="url(#shadowSm)">
+    <path d="M480,438 L480,408 A30,30,0,0,1,506,453 Z" fill="#444444"/>
+    <path d="M480,438 L506,453 A30,30,0,0,1,454,453 Z" fill="#C62828"/>
+    <path d="M480,438 L454,453 A30,30,0,0,1,480,408 Z" fill="#2E7D32"/>
+    <circle cx="480" cy="438" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="480" y="487" text-anchor="middle" font-size="13.5" font-weight="700" fill="#2c1a00">Sacrifice</text>
+  <!-- Tap/Untap (380,406): U(#1565C0) W(#F5EABD) G(#2E7D32) -->
+  <g filter="url(#shadowSm)">
+    <path d="M380,406 L380,376 A30,30,0,0,1,406,421 Z" fill="#1565C0"/>
+    <path d="M380,406 L406,421 A30,30,0,0,1,354,421 Z" fill="#F5EABD"/>
+    <path d="M380,406 L354,421 A30,30,0,0,1,380,376 Z" fill="#2E7D32"/>
+    <circle cx="380" cy="406" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="354" y="447" text-anchor="end" font-size="13.5" font-weight="700" fill="#2c1a00">Tap / Untap</text>
+  <!-- Token (318,321): R(#C62828) G(#2E7D32) W(#F5EABD) -->
+  <g filter="url(#shadowSm)">
+    <path d="M318,321 L318,291 A30,30,0,0,1,344,336 Z" fill="#C62828"/>
+    <path d="M318,321 L344,336 A30,30,0,0,1,292,336 Z" fill="#2E7D32"/>
+    <path d="M318,321 L292,336 A30,30,0,0,1,318,291 Z" fill="#F5EABD"/>
+    <circle cx="318" cy="321" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="278" y="335" text-anchor="end" font-size="13.5" font-weight="700" fill="#2c1a00">Token</text>
+  <!-- Graveyard (318,215): B(#444) U(#1565C0) G(#2E7D32) -->
+  <g filter="url(#shadowSm)">
+    <path d="M318,215 L318,185 A30,30,0,0,1,344,230 Z" fill="#444444"/>
+    <path d="M318,215 L344,230 A30,30,0,0,1,292,230 Z" fill="#1565C0"/>
+    <path d="M318,215 L292,230 A30,30,0,0,1,318,185 Z" fill="#2E7D32"/>
+    <circle cx="318" cy="215" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="278" y="202" text-anchor="end" font-size="13.5" font-weight="700" fill="#2c1a00">Graveyard</text>
+  <!-- Artifact (380,130): U(#1565C0) R(#C62828) G(#2E7D32) -->
+  <g filter="url(#shadowSm)">
+    <path d="M380,130 L380,100 A30,30,0,0,1,406,145 Z" fill="#1565C0"/>
+    <path d="M380,130 L406,145 A30,30,0,0,1,354,145 Z" fill="#C62828"/>
+    <path d="M380,130 L354,145 A30,30,0,0,1,380,100 Z" fill="#2E7D32"/>
+    <circle cx="380" cy="130" r="30" fill="none" stroke="#c9a030" stroke-width="1.4"/>
+  </g>
+  <text x="354" y="90" text-anchor="end" font-size="13.5" font-weight="700" fill="#2c1a00">Artifact</text>
+  <!-- Legend -->
+  <text x="480" y="513" text-anchor="middle" font-size="10" fill="#9b7a40" letter-spacing="2" font-weight="600">COLOR IDENTITY</text>
+  <line x1="236" y1="509" x2="282" y2="509" stroke="#c9a030" stroke-width="0.6" opacity="0.5"/>
+  <line x1="678" y1="509" x2="724" y2="509" stroke="#c9a030" stroke-width="0.6" opacity="0.5"/>
+  <g font-size="11.5" fill="#4a3520" font-weight="500">
+    <circle cx="292" cy="526" r="6" fill="#F5EABD" stroke="#c9a030" stroke-width="1"/>
+    <text x="304" y="530">White</text>
+    <circle cx="364" cy="526" r="6" fill="#1565C0"/>
+    <text x="376" y="530">Blue</text>
+    <circle cx="430" cy="526" r="6" fill="#444444"/>
+    <text x="442" y="530">Black</text>
+    <circle cx="500" cy="526" r="6" fill="#C62828"/>
+    <text x="512" y="530">Red</text>
+    <circle cx="563" cy="526" r="6" fill="#2E7D32"/>
+    <text x="575" y="530">Green</text>
+  </g>
+</svg>
