@@ -200,50 +200,34 @@ window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/16
 		var cardName = card.name.replace(/^\d+_/, '').replace(/\.png$/i, '');
 		var src = imageDir + encodeURIComponent(card.name);
 
+		var img = document.createElement('img');
+		img.decoding = 'async';
+		img.loading  = index < 20 ? 'eager' : 'lazy';
+		img.alt      = cardName;
+		img.src      = src;
+
 		if (card.rotate) {
-			// Image en paysage (WxH ou W>H) : rotation -90deg pour portrait
-			// Apres rotation visuelle : largeur = card.h, hauteur = card.w
-			// On scale pour obtenir 375px de large (taille carte standard)
-			var visualW = card.h;   // largeur visuelle apres rotation
-			var visualH = card.w;   // hauteur visuelle apres rotation
-			var scale   = 375 / visualW;
-			var finalW  = Math.round(visualW * scale);   // = 375
-			var finalH  = Math.round(visualH * scale);
-			var imgW    = Math.round(card.w * scale);     // taille image reelle scalee
-			var imgH    = Math.round(card.h * scale);
-
-			var wrap = document.createElement('div');
-			wrap.style.cssText = 'position:relative;overflow:hidden;width:' + finalW + 'px;height:' + finalH + 'px;flex-shrink:0;';
-
-			var img = document.createElement('img');
-			img.decoding = 'async';
-			img.loading  = index < 20 ? 'eager' : 'lazy';
-			img.alt      = cardName;
-			img.src      = src;
+			// Image en paysage : rotation -90deg + margins pour compenser
+			// Ex: 523x375 → apres rotation visuel 375x523
+			// Marge verticale = (w - h) / 2, Marge horizontale = (h - w) / 2
+			var marginV = (card.w - card.h) / 2;
+			var marginH = (card.h - card.w) / 2;
 			img.style.cssText = [
-				'position:absolute',
-				'width:'  + imgW + 'px',
-				'height:' + imgH + 'px',
-				'top:50%',
-				'left:50%',
-				'transform:translate(-50%,-50%) rotate(-90deg)',
-				'max-width:none'
+				'display:block',
+				'width:' + card.w + 'px !important',
+				'height:' + card.h + 'px !important',
+				'max-width:none !important',
+				'object-fit:none !important',
+				'transform:rotate(-90deg)',
+				'margin:' + marginV + 'px ' + marginH + 'px'
 			].join(';');
-
-			wrap.appendChild(img);
-			figure.appendChild(wrap);
 		} else {
-			var img = document.createElement('img');
-			img.loading  = index < 20 ? 'eager' : 'lazy';
-			img.decoding = 'async';
-			img.width    = 375;
-			img.height   = 523;
-			img.src      = src;
-			img.alt      = cardName;
+			img.width  = 375;
+			img.height = 523;
 			img.style.maxWidth = '375px';
-			figure.appendChild(img);
 		}
 
+		figure.appendChild(img);
 		return figure;
 	}
 
