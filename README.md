@@ -84,6 +84,15 @@ Le script génère `card-list.json` (cartes) et `token-list.json` (tokens) avec 
 - Le tri est **numérique** (1, 2, 3... 380) et non alphabétique
 - Toute modification dans les dossiers d'images est prise en compte après régénération des manifestes et push
 
+### Détection automatique des images mal orientées
+
+Le script détecte automatiquement les images en **mode paysage** (largeur > hauteur) et les marque `rotate: true` dans le JSON. La galerie les affiche alors correctement en portrait via `transform: rotate(-90deg)`.
+
+- **Pas d'action manuelle** nécessaire : toute image ajoutée en paysage sera automatiquement redressée
+- Deux formats paysage supportés : `523×375` (carte standard) et `752×523` (double carte)
+- Actuellement **16 cartes** détectées (ex: `28_Sanctified Connexion.png`, `144_Dragon Surge.png`...)
+- Si tu corrige une image en portrait, relance le script — le flag `rotate` disparaîtra automatiquement
+
 ## 🎨 Thème & Couleurs
 
 | Élément | Couleur |
