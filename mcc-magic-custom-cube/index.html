@@ -207,20 +207,20 @@ window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/16
 		img.src      = src;
 
 		if (card.rotate) {
-			// Image en paysage : rotation -90deg + margins pour compenser
-			// Ex: 523x375 → apres rotation visuel 375x523
-			// Marge verticale = (w - h) / 2, Marge horizontale = (h - w) / 2
-			var marginV = (card.w - card.h) / 2;
-			var marginH = (card.h - card.w) / 2;
-			img.style.cssText = [
-				'display:block',
-				'width:' + card.w + 'px !important',
-				'height:' + card.h + 'px !important',
-				'max-width:none !important',
-				'object-fit:none !important',
-				'transform:rotate(-90deg)',
-				'margin:' + marginV + 'px ' + marginH + 'px'
-			].join(';');
+			// Scale pour que la largeur VISUELLE apres rotation = 375px
+			// Apres rotate(-90deg) : visuel W = card.h, visuel H = card.w
+			var scale = 375 / card.h;
+			var displayW = 375;
+			var displayH = Math.round(card.w * scale);
+
+			// Wrapper avec les dimensions du portrait final
+			var wrap = document.createElement('div');
+			wrap.style.cssText = 'width:' + displayW + 'px;height:' + displayH + 'px;overflow:hidden;position:relative;flex-shrink:0;';
+
+			img.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-90deg) scale(' + scale + ');max-width:none !important;';
+
+			wrap.appendChild(img);
+			figure.appendChild(wrap);
 		} else {
 			img.width  = 375;
 			img.height = 523;
