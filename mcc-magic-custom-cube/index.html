@@ -176,41 +176,65 @@ window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/16
 <p id="mcc-loading" style="text-align:center; width:100%; padding: 2em;">Chargement des cartes...</p>
 </div>
 
+<h2 style="text-align:center; margin-top: 2em;">Tokens</h2>
+
+<!-- Galerie Tokens - Chargement dynamique depuis token-list.json -->
+<div id="mcc-token-gallery" class="wp-block-gallery has-nested-images columns-default is-cropped is-layout-flex wp-block-gallery-is-layout-flex" style="min-height: 200px;">
+<p id="token-loading" style="text-align:center; width:100%; padding: 2em;">Chargement des tokens...</p>
+</div>
+
 <script>
 (function() {
-var gallery = document.getElementById('mcc-gallery');
-var loading = document.getElementById('mcc-loading');
-var IMAGE_DIR = './../mcc-magic-custom-cube_image/';
+	// --- Tri numerique sur le prefixe N_ du nom de fichier ---
+	function numericSort(a, b) {
+		var na = parseInt(a, 10);
+		var nb = parseInt(b, 10);
+		if (!isNaN(na) && !isNaN(nb)) return na - nb;
+		if (!isNaN(na)) return -1;
+		if (!isNaN(nb)) return 1;
+		return a.localeCompare(b);
+	}
 
-fetch('./card-list.json')
-.then(function(response) {
-if (!response.ok) throw new Error('Impossible de charger card-list.json');
-return response.json();
-})
-.then(function(images) {
-loading.remove();
-images.forEach(function(filename, index) {
-var cardName = filename.replace(/\.\d*\.png$/, '').replace(/\.png$/, '');
-var figure = document.createElement('figure');
-figure.className = 'wp-block-image size-large';
+	function loadGallery(galleryId, loadingId, jsonFile, imageDir) {
+		var gallery = document.getElementById(galleryId);
+		var loading = document.getElementById(loadingId);
 
-var img = document.createElement('img');
-img.loading = index < 20 ? 'eager' : 'lazy';
-img.decoding = 'async';
-img.width = 375;
-img.height = 523;
-img.src = IMAGE_DIR + encodeURIComponent(filename);
-img.alt = cardName;
-img.style.maxWidth = '375px';
+		fetch(jsonFile)
+			.then(function(response) {
+				if (!response.ok) throw new Error('Impossible de charger ' + jsonFile);
+				return response.json();
+			})
+			.then(function(images) {
+				images.sort(numericSort);
+				loading.remove();
+				images.forEach(function(filename, index) {
+					var cardName = filename.replace(/^\d+_/, '').replace(/\.png$/, '');
+					var figure = document.createElement('figure');
+					figure.className = 'wp-block-image size-large';
 
-figure.appendChild(img);
-gallery.appendChild(figure);
-});
-})
-.catch(function(err) {
-loading.textContent = 'Erreur : ' + err.message;
-console.error('MCC Gallery error:', err);
-});
+					var img = document.createElement('img');
+					img.loading = index < 20 ? 'eager' : 'lazy';
+					img.decoding = 'async';
+					img.width = 375;
+					img.height = 523;
+					img.src = imageDir + encodeURIComponent(filename);
+					img.alt = cardName;
+					img.style.maxWidth = '375px';
+
+					figure.appendChild(img);
+					gallery.appendChild(figure);
+				});
+			})
+			.catch(function(err) {
+				loading.textContent = 'Erreur : ' + err.message;
+				console.error('Gallery error:', err);
+			});
+	}
+
+	// Cartes
+	loadGallery('mcc-gallery', 'mcc-loading', './card-list.json', './../mcc-magic-custom-cube_image/');
+	// Tokens
+	loadGallery('mcc-token-gallery', 'token-loading', './token-list.json', './../mcc-magic-custom-cube_image_token/');
 })();
 </script>
 

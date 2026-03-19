@@ -9,7 +9,7 @@ Ce site expose deux projets de cartes MTG créées sur mesure :
 | Projet | Description | Cartes |
 |--------|-------------|--------|
 | **Jeko** | Set custom avec 5 mécaniques originales : *Curse, Guard, Prayer, Last Breath, Tribal* | ~293 |
-| **MCC – Magic Custom Cube** | Cube draft custom (projet 2024) | ~427 |
+| **MCC – Magic Custom Cube** | Cube draft custom (projet 2024) — Cartes + Tokens | ~380 cartes + 47 tokens |
 
 ## 🏗️ Architecture
 
@@ -20,11 +20,16 @@ myMtgWebsite.github.io/
 │   └── index.html                      # Page Jeko (set custom)
 ├── mcc-magic-custom-cube/
 │   ├── index.html                      # Page MCC (cube custom) — chargement dynamique
-│   └── card-list.json                  # Manifeste des images MCC (généré automatiquement)
-├── mcc-magic-custom-cube_image/        # 📁 Source des images MCC (PNG)
-│   ├── Abundance Colossus.png
+│   ├── card-list.json                  # Manifeste des cartes (généré automatiquement)
+│   └── token-list.json                 # Manifeste des tokens (généré automatiquement)
+├── mcc-magic-custom-cube_image/        # 📁 Source des images cartes MCC (PNG numérotées)
+│   ├── 1_Lenala Kindhearted Monstrosity.png
 │   ├── ...
-│   └── Zombot Intruder.png
+│   └── 380_Whispering Falls.png
+├── mcc-magic-custom-cube_image_token/   # 📁 Source des images tokens MCC (PNG numérotées)
+│   ├── 1_Angel.png
+│   ├── ...
+│   └── 47_Treasure.png
 ├── wp-content/
 │   ├── themes/twentytwenty/            # Thème WordPress TwentyTwenty v2.7
 │   │   ├── style.css
@@ -35,7 +40,7 @@ myMtgWebsite.github.io/
 │       ├── 2024/10/                    # Images cartes Jeko
 │       └── 2025/02/                    # Image bannière MCC
 ├── wp-includes/css/                    # CSS WordPress core
-├── generate-card-list.ps1              # Script de régénération du manifeste MCC
+├── generate-card-list.ps1              # Script de régénération des manifestes MCC (cartes + tokens)
 └── README.md
 ```
 
@@ -50,31 +55,34 @@ myMtgWebsite.github.io/
 
 ## 🔄 Gestion des images MCC 100% VS Code
 
-La page MCC charge désormais **automatiquement** toutes les images du dossier `mcc-magic-custom-cube_image/` grâce à un script et un manifeste JSON. Plus besoin de WordPress ni de modifier le HTML à la main.
+La page MCC charge **automatiquement** les cartes et tokens depuis deux dossiers d'images distincts. Plus besoin de WordPress ni de modifier le HTML.
 
 ### Procédure de mise à jour (workflow VS Code)
 
-1. **Ajouter, modifier ou supprimer** des images PNG dans `mcc-magic-custom-cube_image/` (directement dans le repo VS Code)
-2. **Régénérer le manifeste** en lançant :
+1. **Ajouter, modifier ou supprimer** des images PNG dans :
+   - `mcc-magic-custom-cube_image/` pour les **cartes**
+   - `mcc-magic-custom-cube_image_token/` pour les **tokens**
+2. **Régénérer les manifestes** :
    ```powershell
    powershell -ExecutionPolicy Bypass -File .\generate-card-list.ps1
    ```
 3. **Commit & Push** sur GitHub
 
-Le script scanne le dossier d'images et met à jour automatiquement `mcc-magic-custom-cube/card-list.json`.
+Le script génère `card-list.json` (cartes) et `token-list.json` (tokens) avec un **tri numérique** basé sur le préfixe du nom de fichier.
 
 ### Convention de nommage des images
 
-- Nom de fichier = Nom de la carte (ex: `Abundance Colossus.png`)
-- Format : **PNG**
-- Variantes d'une même carte : suffix `.1`, `.2`, etc. (ex: `Paladin of Piety.png`, `Paladin of Piety.1.png`)
-- Le nom affiché dans l'attribut `alt` est dérivé du nom de fichier (sans l'extension)
+- Format : **`N_Nom de la carte.png`** (ex: `1_Angel.png`, `42_Echoing Shade.png`)
+- Le préfixe numérique `N_` détermine l'**ordre d'affichage** sur le site
+- Le nom affiché (attribut `alt`) est dérivé du nom sans le préfixe ni l'extension
+- Format image : **PNG**
 
-### Fonctionnement de la galerie MCC
+### Fonctionnement des galeries MCC
 
-- La page [mcc-magic-custom-cube/index.html](mcc-magic-custom-cube/index.html) utilise un script JavaScript qui charge dynamiquement toutes les images listées dans `card-list.json`.
-- Toute modification dans le dossier d'images est prise en compte après régénération du manifeste et déploiement.
-- Plus besoin de WordPress ni d'éditer le HTML pour la galerie MCC.
+- La page affiche **deux blocs** : un pour les cartes, un pour les tokens (titre "Tokens")
+- Chaque bloc charge dynamiquement les images depuis son manifeste JSON respectif
+- Le tri est **numérique** (1, 2, 3... 380) et non alphabétique
+- Toute modification dans les dossiers d'images est prise en compte après régénération des manifestes et push
 
 ## 🎨 Thème & Couleurs
 
@@ -89,7 +97,7 @@ Le script scanne le dossier d'images et met à jour automatiquement `mcc-magic-c
 
 - Les chemins sont **relatifs** (`./`, `./../`), ce qui rend le site portable.
 - La page **Jeko** utilise encore des images statiques dans `wp-content/uploads/2024/10/`.
-- La page **MCC** utilise un chargement dynamique depuis `mcc-magic-custom-cube_image/`.
+- La page **MCC** utilise un chargement dynamique depuis `mcc-magic-custom-cube_image/` (cartes) et `mcc-magic-custom-cube_image_token/` (tokens).
 
 ---
 
