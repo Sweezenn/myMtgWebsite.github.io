@@ -125,6 +125,28 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .brand-icon  { font-size: 22px; }
 .brand-title { font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: .02em; }
 
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.site-nav a {
+  color: var(--text-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 5px 9px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--gold-light);
+  border-color: var(--gold-dark);
+  background: var(--gold-faint);
+}
+
 #progress-wrap {
   flex: 1;
   display: flex;
@@ -825,6 +847,20 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 }
 
 @media (max-width: 800px) {
+  #header {
+    height: auto;
+    min-height: var(--header-h);
+    flex-wrap: wrap;
+    padding: 8px 12px;
+  }
+  .site-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    border-top: 1px solid var(--bg-3);
+    padding-top: 6px;
+  }
+
   #focus-body { flex-direction: column; overflow-y: auto; }
   #focus-left {
     width: 100%;
