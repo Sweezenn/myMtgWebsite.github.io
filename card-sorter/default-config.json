@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "version": "1.0",
+    "createdAt": "2026-08-13",
+    "updatedAt": "2026-08-13",
+    "author": "",
+    "description": "Configuration par défaut — 6 dimensions. Importez ce fichier dans MTG Cube Sorter, puis ajoutez vos images."
+  },
+  "dimensions": [
+    {
+      "id": "accessibilite",
+      "label": "Accessibilité",
+      "type": "single-choice",
+      "required": true,
+      "shortcut": "a",
+      "options": [
+        { "id": "accessible",    "label": "Accessible",     "color": "#22c55e", "shortcut": null },
+        { "id": "intermediaire", "label": "Intermédiaire",  "color": "#f59e0b", "shortcut": null },
+        { "id": "difficile",     "label": "Difficile",      "color": "#ef4444", "shortcut": null }
+      ]
+    },
+    {
+      "id": "color_pie",
+      "label": "Color Pie respecté",
+      "type": "boolean",
+      "required": true,
+      "shortcut": "z",
+      "trueLabel": "Oui",
+      "falseLabel": "Non",
+      "unselectedLabel": "Non sélectionné"
+    },
+    {
+      "id": "illustration_coherente",
+      "label": "Illustration cohérente",
+      "type": "boolean",
+      "required": true,
+      "shortcut": "e",
+      "trueLabel": "Oui",
+      "falseLabel": "Non",
+      "unselectedLabel": "Non sélectionné"
+    },
+    {
+      "id": "nom_coherent",
+      "label": "Nom cohérent",
+      "type": "boolean",
+      "required": true,
+      "shortcut": "r",
+      "trueLabel": "Oui",
+      "falseLabel": "Non",
+      "unselectedLabel": "Non sélectionné"
+    },
+    {
+      "id": "standard_mtg",
+      "label": "Standard MTG respecté",
+      "type": "boolean",
+      "required": true,
+      "shortcut": "q",
+      "trueLabel": "Oui",
+      "falseLabel": "Non",
+      "unselectedLabel": "Non sélectionné"
+    },
+    {
+      "id": "puissance",
+      "label": "Puissance",
+      "type": "scale",
+      "required": false,
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "shortcut": "s",
+      "scaleLabels": {
+        "1": "Trop faible",
+        "2": "OK",
+        "3": "Ne sait pas",
+        "4": "Trop fort"
+      }
+    }
+  ],
+  "cards": []
+}

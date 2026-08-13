@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTG Cube Sorter</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HEADER ───────────────────────────────────────── -->
+  <header id="header">
+    <div class="header-brand">
+      <span class="brand-icon">🃏</span>
+      <span class="brand-title">MTG Cube Sorter</span>
+    </div>
+
+    <div id="progress-wrap" class="hidden">
+      <div id="progress-bar-bg">
+        <div id="progress-bar-fill"></div>
+      </div>
+      <span id="progress-label"></span>
+    </div>
+
+    <nav class="header-actions">
+      <button id="btn-new-session"    title="Nouvelle session vierge">✦ Nouvelle</button>
+      <button id="btn-import-images"  title="Ajouter des images de cartes">⊕ Images</button>
+      <button id="btn-import-json"    title="Charger / fusionner une session JSON">↑ Charger</button>
+      <button id="btn-export-json"    title="Sauvegarder la session (S)">↓ Sauver</button>
+      <button id="btn-open-dim-editor" title="Gérer les dimensions de tri">⚙ Dimensions</button>
+    </nav>
+  </header>
+
+  <!-- ── EMPTY STATE ──────────────────────────────────── -->
+  <div id="empty-state">
+    <div class="empty-card">
+      <div class="empty-icon">🃏</div>
+      <h2>Aucune carte chargée</h2>
+      <p>Importez des images de cartes ou chargez une session existante pour commencer.</p>
+      <div class="empty-btns">
+        <button class="btn-primary"   id="btn-empty-images">⊕ Importer des images</button>
+        <button class="btn-secondary" id="btn-empty-json">↑ Charger une session JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GALLERY VIEW ─────────────────────────────────── -->
+  <section id="view-gallery" class="view hidden">
+    <div id="gallery-toolbar">
+      <input id="search-input" type="text" placeholder="🔍 Rechercher une carte…" autocomplete="off">
+      <div id="filter-row">
+        <button class="filter-btn active" data-filter="all">Toutes</button>
+        <button class="filter-btn"        data-filter="unreviewed">Non triées</button>
+      </div>
+      <button id="btn-sort-mode" class="btn-secondary" title="Aller à la première carte non triée">▶ Trier (prochaine non triée)</button>
+    </div>
+    <div id="dimension-filters" aria-label="Filtres par dimension"></div>
+    <div id="card-grid"></div>
+  </section>
+
+  <!-- ── FOCUS VIEW ───────────────────────────────────── -->
+  <section id="view-focus" class="view hidden">
+    <div id="focus-nav">
+      <button id="btn-prev" title="Carte précédente (←)">← Préc.</button>
+      <span id="focus-counter">1 / 1</span>
+      <button id="btn-next" title="Carte suivante (→ ou Espace)">Suiv. →</button>
+      <button id="btn-back" class="btn-secondary" title="Retour galerie (Échap)">↩ Galerie</button>
+    </div>
+    <div id="focus-body">
+      <div id="focus-left">
+        <img id="focus-img" src="" alt="Carte Magic">
+        <div id="focus-no-image" class="hidden">🃏<br><small>Image non disponible</small></div>
+        <div id="focus-card-name"></div>
+      </div>
+      <div id="focus-right">
+        <div id="focus-dims-panel"></div>
+        <div id="focus-notes-section">
+          <label for="focus-notes">📝 Notes <small>(N pour focus)</small></label>
+          <textarea id="focus-notes" placeholder="Commentaire libre…" rows="3"></textarea>
+          <div id="focus-card-actions">
+            <button id="btn-reset-card" class="btn-danger">✖ Tout effacer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DIMENSION EDITOR MODAL ───────────────────────── -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal-dim-editor">
+      <div class="modal-header">
+        <h2>⚙ Gérer les dimensions</h2>
+        <button id="btn-close-modal" aria-label="Fermer">✕</button>
+      </div>
+      <div class="modal-hint">
+        Les dimensions s'appliquent à toutes les cartes. Chaque modification est immédiatement enregistrée dans la session.
+      </div>
+      <div id="dim-editor-list"></div>
+      <div class="modal-footer">
+        <button id="btn-add-dim"       class="btn-primary">+ Ajouter une dimension</button>
+        <button id="btn-export-config" class="btn-secondary">↓ Exporter la config (sans cartes)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DRAG OVERLAY ─────────────────────────────────── -->
+  <div id="drag-overlay" class="hidden">
+    <div class="drag-message">🃏 Déposez les images ici</div>
+  </div>
+
+  <!-- ── TOAST ────────────────────────────────────────── -->
+  <div id="toast" aria-live="polite"></div>
+
+  <!-- ── HIDDEN FILE INPUTS ───────────────────────────── -->
+  <input id="file-images" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" style="display:none">
+  <input id="file-json"   type="file" accept=".json" style="display:none">
+
+</div><!-- /#app -->
+<script src="app.js"></script>
+</body>
+</html>
