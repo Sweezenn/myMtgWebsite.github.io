@@ -1000,6 +1000,11 @@ const KeyboardHandler = {
 // ═══════════════════════════════════════════════════════════════════
 
 function switchView(view) {
+  if (view !== 'focus') {
+    swipeTransitionId++;
+    swipeInProgress = false;
+    document.getElementById('focus-body')?.classList.remove('swipe-in-left', 'swipe-in-right', 'swipe-out-left', 'swipe-out-right');
+  }
   state.ui.view = view;
   document.getElementById('empty-state').classList.toggle('hidden',    view !== 'empty');
   document.getElementById('view-gallery').classList.toggle('hidden',   view !== 'gallery');
@@ -1014,7 +1019,8 @@ function openFocus(idx) {
   switchView('focus');
 }
 
-function nav(dir) {
+function nav(dir, fromSwipe = false) {
+  if (swipeInProgress && !fromSwipe) return;
   if (!state.session) return;
   const next = state.ui.currentCardIndex + dir;
   if (next < 0 || next >= state.session.cards.length) return;
@@ -1024,6 +1030,7 @@ function nav(dir) {
 }
 
 let swipeInProgress = false;
+let swipeTransitionId = 0;
 
 function swipeNav(dir) {
   if (swipeInProgress || !state.session || state.ui.view !== 'focus') return;
@@ -1031,13 +1038,16 @@ function swipeNav(dir) {
   if (next < 0 || next >= state.session.cards.length) return;
   swipeInProgress = true;
   const focusBody = document.getElementById('focus-body');
+  const transitionId = ++swipeTransitionId;
   focusBody.classList.remove('swipe-in-left', 'swipe-in-right', 'swipe-out-left', 'swipe-out-right');
   focusBody.classList.add(dir > 0 ? 'swipe-out-left' : 'swipe-out-right');
   window.setTimeout(() => {
-    nav(dir);
+    if (transitionId !== swipeTransitionId || state.ui.view !== 'focus') return;
+    nav(dir, true);
     focusBody.classList.remove('swipe-out-left', 'swipe-out-right');
     focusBody.classList.add(dir > 0 ? 'swipe-in-right' : 'swipe-in-left');
     window.setTimeout(() => {
+      if (transitionId !== swipeTransitionId) return;
       focusBody.classList.remove('swipe-in-left', 'swipe-in-right');
       swipeInProgress = false;
     }, 180);
