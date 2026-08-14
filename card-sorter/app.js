@@ -757,9 +757,14 @@ const DimensionEditor = {
   open() {
     this._rebuild();
     document.getElementById('modal-overlay').classList.remove('hidden');
+    this._updateShortcutConflicts();
   },
 
   close() {
+    if (this._updateShortcutConflicts()) {
+      toast('Corrigez les raccourcis en conflit avant de fermer.', true, 4500);
+      return;
+    }
     document.getElementById('modal-overlay').classList.add('hidden');
     if (state.ui.view === 'focus') { KeyboardHandler.buildMap(); FocusView.render(); }
     updateProgress();
@@ -770,6 +775,51 @@ const DimensionEditor = {
     const list = document.getElementById('dim-editor-list');
     list.innerHTML = '';
     state.session.dimensions.forEach((dim, i) => list.appendChild(this._item(dim, i)));
+    this._updateShortcutConflicts();
+  },
+
+  _shortcutEntries() {
+    const entries = [];
+    state.session.dimensions.forEach(dim => {
+      if (dim.shortcut && ['single-choice', 'scale', 'boolean'].includes(dim.type)) {
+        entries.push({ key: dim.shortcut.trim().toLowerCase(), label: `${dim.label} (dimension)`, selector: `[data-shortcut-owner="dim:${CSS.escape(dim.id)}"]` });
+      }
+      if (['single-choice', 'multi-tag'].includes(dim.type)) {
+        (dim.options || []).forEach(option => {
+          if (option.shortcut) entries.push({ key: option.shortcut.trim().toLowerCase(), label: `${dim.label} : ${option.label}`, selector: `[data-shortcut-owner="option:${CSS.escape(dim.id)}:${CSS.escape(option.id)}"]` });
+        });
+      }
+    });
+    return entries.filter(entry => entry.key);
+  },
+
+  _updateShortcutConflicts() {
+    const groups = new Map();
+    this._shortcutEntries().forEach(entry => {
+      if (!groups.has(entry.key)) groups.set(entry.key, []);
+      groups.get(entry.key).push(entry);
+    });
+    const conflicts = [...groups.entries()].filter(([, entries]) => entries.length > 1);
+    document.querySelectorAll('[data-shortcut-owner]').forEach(field => {
+      field.classList.remove('shortcut-conflict');
+      field.removeAttribute('aria-invalid');
+      field.removeAttribute('title');
+    });
+    conflicts.forEach(([key, entries]) => {
+      entries.forEach(entry => document.querySelectorAll(entry.selector).forEach(field => {
+        field.classList.add('shortcut-conflict');
+        field.setAttribute('aria-invalid', 'true');
+        field.title = `Conflit avec : ${entries.filter(other => other !== entry).map(other => other.label).join(', ')}`;
+      }));
+    });
+    const notice = document.getElementById('shortcut-conflicts');
+    if (notice) {
+      notice.textContent = conflicts.length
+        ? `⚠ Raccourcis en conflit : ${conflicts.map(([key, entries]) => `${key.toUpperCase()} (${entries.map(entry => entry.label).join(' / ')})`).join(' · ')}`
+        : '';
+      notice.classList.toggle('visible', conflicts.length > 0);
+    }
+    return conflicts.length > 0;
   },
 
   _item(dim, idx) {
@@ -815,7 +865,7 @@ const DimensionEditor = {
     const reqItems = [mkField('', `<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px">
       <input class="f-required" type="checkbox" ${dim.required?'checked':''}> Dimension obligatoire</label>`)];
     if (dim.type === 'scale' || dim.type === 'boolean') {
-      reqItems.push(mkField('Raccourci (1 touche)', `<input class="f-shortcut" type="text" maxlength="1" value="${escHtml(dim.shortcut||'')}" style="width:70px">`));
+      reqItems.push(mkField('Raccourci (1 touche)', `<input class="f-shortcut" data-shortcut-owner="dim:${escHtml(dim.id)}" type="text" maxlength="1" value="${escHtml(dim.shortcut||'')}" style="width:70px">`));
     }
     f.appendChild(mkRow(reqItems));
 
@@ -893,13 +943,13 @@ const DimensionEditor = {
     row.innerHTML = `
       <input type="text"  value="${escHtml(opt.label)}"        placeholder="Label" title="Nom de l'option">
       <input type="color" value="${opt.color || '#6366f1'}"     title="Couleur">
-      <input type="text"  class="shortcut-input" value="${escHtml(opt.shortcut || '')}" maxlength="1" placeholder="⌨" title="Raccourci clavier">
+      <input type="text"  class="shortcut-input" data-shortcut-owner="option:${escHtml(dim.id)}:${escHtml(opt.id)}" value="${escHtml(opt.shortcut || '')}" maxlength="1" placeholder="⌨" title="Raccourci clavier">
       <button class="btn-remove-opt" title="Supprimer cette option">✕</button>
     `;
     const [lInp, cInp, sInp, delBtn] = row.querySelectorAll('input, button');
     lInp.addEventListener('input',   () => { opt.label    = lInp.value;    SessionManager.touch(); });
     cInp.addEventListener('input',   () => { opt.color    = cInp.value;    SessionManager.touch(); });
-    sInp.addEventListener('input',   () => { opt.shortcut = sInp.value || null; SessionManager.touch(); });
+    sInp.addEventListener('input',   () => { opt.shortcut = sInp.value || null; SessionManager.touch(); this._updateShortcutConflicts(); });
     delBtn.addEventListener('click', () => {
       const i = dim.options.indexOf(opt);
       if (i === -1) return;
@@ -934,7 +984,7 @@ const DimensionEditor = {
       this._rebuild(); SessionManager.touch();
     });
     q('.f-required')?.addEventListener('change',    e => { dim.required   = e.target.checked;         SessionManager.touch(); });
-    q('.f-shortcut')?.addEventListener('input',     e => { dim.shortcut   = e.target.value || null;   SessionManager.touch(); });
+    q('.f-shortcut')?.addEventListener('input',     e => { dim.shortcut   = e.target.value || null;   SessionManager.touch(); this._updateShortcutConflicts(); });
     q('.f-min')?.addEventListener('input',          e => { dim.min        = parseInt(e.target.value) || 1; SessionManager.touch(); });
     q('.f-max')?.addEventListener('input',          e => { dim.max        = parseInt(e.target.value) || 5; SessionManager.touch(); });
     q('.f-step')?.addEventListener('input',         e => { dim.step       = parseInt(e.target.value) || 1; SessionManager.touch(); });
