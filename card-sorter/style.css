@@ -533,7 +533,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 }
 .dim-header { cursor: pointer; }
 .dim-header:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
-.dim-chevron { margin-left: auto; color: var(--text-3); font-size: 15px; transition: transform .15s; }
+.dim-chevron { margin-left: 8px; color: var(--text-3); font-size: 15px; transition: transform .15s; }
 .dim-block.collapsed .dim-chevron { transform: rotate(-90deg); }
 .dim-block.collapsed .dim-body { display: none; }
 .dim-shortcut {
