@@ -171,6 +171,9 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 }
 #progress-label { font-size: 12px; color: var(--text-2); white-space: nowrap; }
 
+#save-status { color: var(--text-3); font-size: 11px; white-space: nowrap; }
+#save-status.pending { color: var(--amber); }
+
 .header-actions { display: flex; gap: 6px; margin-left: auto; }
 .header-actions button {
   background: transparent;
@@ -402,13 +405,16 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   display: flex;
   overflow: hidden;
   justify-content: center;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 /* Left: card image */
 #focus-left {
   flex: 0 0 auto;
-  width: min(42vw, 560px);
-  max-width: 560px;
+  width: min(38%, 620px);
+  max-width: 620px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -418,6 +424,28 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   background: var(--bg-0);
   border-right: 1px solid var(--bg-3);
 }
+.image-zoom-btn {
+  background: transparent;
+  border: 1px solid var(--bg-4);
+  border-radius: var(--radius);
+  color: var(--text-2);
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.image-zoom-btn:hover { border-color: var(--gold); color: var(--gold); }
+#focus-left.zoomed {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  width: 100vw;
+  max-width: none;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(10,10,20,.97);
+  border: 0;
+}
+#focus-left.zoomed #focus-img { max-width: 90vw; max-height: 82vh; }
 #focus-body.swipe-out-left { animation: swipe-out-left .15s ease-in forwards; }
 #focus-body.swipe-out-right { animation: swipe-out-right .15s ease-in forwards; }
 #focus-body.swipe-in-left { animation: swipe-in-left .18s ease-out both; }
@@ -892,6 +920,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   .filter-toggle { display: inline-block; }
   #filter-row { padding: 8px 12px; }
   #dimension-filters { padding: 8px 12px; }
+  #save-status { display: none; }
   .option-kbd,
   .dim-shortcut,
   .scale-label,
@@ -923,6 +952,9 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     max-width: 100%;
     max-height: min(36dvh, 360px);
   }
+  .image-zoom-btn { min-height: 38px; }
+  #focus-left.zoomed { padding: 18px; }
+  #focus-left.zoomed #focus-img { max-width: 94vw; max-height: 78dvh; }
   .dim-block { border-radius: 5px; }
   .dim-header { padding: 6px 9px; font-size: 11px; }
   .dim-body { padding: 7px 9px; }

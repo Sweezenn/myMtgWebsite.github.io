@@ -196,6 +196,13 @@ function toast(msg, isError = false, duration = 2800) {
   _toastTimer = setTimeout(() => { el.className = ''; }, duration);
 }
 
+function updateSaveStatus() {
+  const status = document.getElementById('save-status');
+  if (!status) return;
+  status.textContent = state.ui.unsaved ? 'Session locale à jour · à exporter' : 'Sauvegardée localement';
+  status.classList.toggle('pending', state.ui.unsaved);
+}
+
 function updateProgress() {
   const wrap = document.getElementById('progress-wrap');
   if (!state.session?.cards.length) { wrap.classList.add('hidden'); return; }
@@ -282,6 +289,7 @@ const SessionManager = {
   touch() {
     if (state.session) state.session.meta.updatedAt = today();
     state.ui.unsaved = true;
+    updateSaveStatus();
   }
 };
 
@@ -1151,6 +1159,9 @@ function init() {
   document.getElementById('btn-prev').addEventListener('click', () => nav(-1));
   document.getElementById('btn-next').addEventListener('click', () => nav(1));
   document.getElementById('btn-back').addEventListener('click', () => switchView('gallery'));
+  document.getElementById('btn-zoom-image').addEventListener('click', () => {
+    document.getElementById('focus-left').classList.toggle('zoomed');
+  });
 
   let touchStartX = 0;
   let touchStartY = 0;
@@ -1253,6 +1264,7 @@ function init() {
         render();
       });
   }
+  updateSaveStatus();
 }
 
 document.addEventListener('DOMContentLoaded', init);
