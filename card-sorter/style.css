@@ -892,6 +892,10 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   .filter-toggle { display: inline-block; }
   #filter-row { padding: 8px 12px; }
   #dimension-filters { padding: 8px 12px; }
+  .option-kbd,
+  .dim-shortcut,
+  .scale-label,
+  #focus-notes-section label small { display: none; }
 
   #focus-body {
     flex-direction: column;
