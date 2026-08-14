@@ -586,6 +586,9 @@ const FocusView = {
 
     const hdr = document.createElement('div');
     hdr.className = 'dim-header';
+    hdr.setAttribute('role', 'button');
+    hdr.setAttribute('tabindex', '0');
+    hdr.setAttribute('aria-expanded', 'true');
     hdr.textContent = dim.label;
     if (dim.shortcut) {
       const shortcut = document.createElement('span');
@@ -598,10 +601,22 @@ const FocusView = {
       b.className = 'dim-required-badge'; b.textContent = 'requis';
       hdr.appendChild(b);
     }
+    const chevron = document.createElement('span');
+    chevron.className = 'dim-chevron';
+    chevron.textContent = '⌄';
+    hdr.appendChild(chevron);
 
     const body = document.createElement('div');
     body.className = 'dim-body';
     body.appendChild(this._control(dim, card));
+    const toggle = () => {
+      const collapsed = block.classList.toggle('collapsed');
+      hdr.setAttribute('aria-expanded', String(!collapsed));
+    };
+    hdr.addEventListener('click', toggle);
+    hdr.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); }
+    });
 
     block.append(hdr, body);
     return block;
@@ -989,7 +1004,11 @@ const KeyboardHandler = {
     if (state.ui.view === 'focus') {
       if (k === 'arrowright' || k === ' ') { e.preventDefault(); nav(1);  return; }
       if (k === 'arrowleft')               { e.preventDefault(); nav(-1); return; }
-      if (k === 'escape')                  { switchView('gallery'); return; }
+      if (k === 'escape')                  {
+        if (document.getElementById('focus-left')?.classList.contains('zoomed')) setImageZoom(false);
+        else switchView('gallery');
+        return;
+      }
       if (k === 'n')                       { e.preventDefault(); document.getElementById('focus-notes').focus(); return; }
 
       const card = state.session?.cards[state.ui.currentCardIndex];
@@ -1026,6 +1045,15 @@ function switchView(view) {
   document.getElementById('view-focus').classList.toggle('hidden',     view !== 'focus');
   if (view === 'gallery') { renderDimensionFilters(); GalleryView.render();  updateProgress(); }
   if (view === 'focus')   { KeyboardHandler.buildMap(); FocusView.render(); updateProgress(); }
+}
+
+function setImageZoom(zoomed) {
+  const panel = document.getElementById('focus-left');
+  const button = document.getElementById('btn-zoom-image');
+  if (!panel || !button) return;
+  panel.classList.toggle('zoomed', zoomed);
+  button.textContent = zoomed ? '⤡ Réduire' : '⤢ Agrandir';
+  button.setAttribute('aria-expanded', String(zoomed));
 }
 
 function openFocus(idx) {
@@ -1159,10 +1187,11 @@ function init() {
   document.getElementById('btn-prev').addEventListener('click', () => nav(-1));
   document.getElementById('btn-next').addEventListener('click', () => nav(1));
   document.getElementById('btn-back').addEventListener('click', () => switchView('gallery'));
-  document.getElementById('btn-zoom-image').addEventListener('click', event => {
-    const zoomed = document.getElementById('focus-left').classList.toggle('zoomed');
-    event.currentTarget.textContent = zoomed ? '⤡ Réduire' : '⤢ Agrandir';
-    event.currentTarget.setAttribute('aria-expanded', String(zoomed));
+  document.getElementById('btn-zoom-image').addEventListener('click', () => {
+    setImageZoom(!document.getElementById('focus-left').classList.contains('zoomed'));
+  });
+  document.getElementById('focus-left').addEventListener('click', event => {
+    if (event.target === event.currentTarget && event.currentTarget.classList.contains('zoomed')) setImageZoom(false);
   });
 
   let touchStartX = 0;
