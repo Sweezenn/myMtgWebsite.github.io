@@ -345,9 +345,13 @@ const StorageAdapter = {
     if (embedImages) {
       for (const card of session.cards) {
         const src = getImageSrc(card);
-        if (src && src.startsWith('blob:')) {
+        if (src && src.startsWith('data:')) {
+          card.imageData = src;
+        } else if (src) {
           try {
-            const blob = await fetch(src).then(r => r.blob());
+            const response = await fetch(src);
+            if (!response.ok) continue;
+            const blob = await response.blob();
             card.imageData = await blobToDataURL(blob);
           } catch { /* skip */ }
         }
@@ -1031,8 +1035,8 @@ function render() {
 // ═══════════════════════════════════════════════════════════════════
 
 function exportDialog() {
-  const hasBlobs = Object.values(state.imageMap).some(v => typeof v === 'string' && v.startsWith('blob:'));
-  const embed = hasBlobs && confirm(
+  const hasImages = state.session?.cards.some(card => getImageSrc(card));
+  const embed = hasImages && confirm(
     'Inclure les images dans le fichier JSON ?\n\n' +
     'OK → fichier autoportant et partageable (plus volumineux)\n' +
     'Annuler → fichier léger (ré-importer les images à la prochaine ouverture)'
