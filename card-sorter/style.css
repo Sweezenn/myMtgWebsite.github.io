@@ -861,19 +861,30 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     padding-top: 6px;
   }
 
-  #focus-body { flex-direction: column; overflow-y: auto; }
+  #focus-body {
+    flex-direction: column;
+    overflow-y: auto;
+    justify-content: flex-start;
+  }
   #focus-left {
     width: 100%;
     max-width: none;
     flex: 0 0 auto;
-    min-height: 46vh;
+    min-height: 0;
+    padding: 12px;
+    justify-content: flex-start;
   }
   #focus-right {
     width: 100%;
     max-width: none;
     flex: 0 0 auto;
   }
-  #focus-img { max-height: 42vh; }
+  #focus-img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - 150px);
+  }
 }
 #toast.show  { opacity: 1; }
 #toast.error { border-color: var(--red); background: #1f0909; color: #fca5a5; }
