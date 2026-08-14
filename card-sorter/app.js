@@ -330,6 +330,22 @@ async function loadDefaultSession() {
 
 const StorageAdapter = {
   KEY: 'mtg-cube-sorter',
+  DB_NAME: 'mtg-cube-sorter-db',
+  DB_VERSION: 1,
+  STORE_NAME: 'sessions',
+  saveQueue: Promise.resolve(),
+
+  openDB() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) { reject(new Error('IndexedDB indisponible')); return; }
+      const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore(this.STORE_NAME);
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  },
 
   saveLocal() {
     if (!state.session) return;
@@ -338,6 +354,51 @@ const StorageAdapter = {
       copy.cards.forEach(c => { c.imageData = null; }); // ne pas saturer localStorage
       localStorage.setItem(this.KEY, JSON.stringify(copy));
     } catch { /* quota dépassé — silencieux */ }
+    this.saveQueue = this.saveQueue.then(() => this._saveIndexedDB()).catch(() => {});
+  },
+
+  async _saveIndexedDB() {
+    if (!state.session) return;
+    const copy = JSON.parse(JSON.stringify(state.session));
+    for (const card of copy.cards) {
+      const src = getImageSrc(card);
+      if (card.imageData || !src || !src.startsWith('blob:')) continue;
+      try {
+        card.imageData = await blobToDataURL(await fetch(src).then(response => response.blob()));
+      } catch { /* l'image statique sera rechargée par son chemin */ }
+    }
+    const db = await this.openDB();
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(this.STORE_NAME, 'readwrite');
+      transaction.objectStore(this.STORE_NAME).put(copy, 'current');
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error);
+    });
+    db.close();
+    const status = document.getElementById('save-status');
+    if (status) {
+      status.textContent = 'Sauvegardée automatiquement';
+      status.classList.remove('pending');
+    }
+  },
+
+  async loadIndexedDB() {
+    const db = await this.openDB();
+    const session = await new Promise((resolve, reject) => {
+      const request = db.transaction(this.STORE_NAME, 'readonly').objectStore(this.STORE_NAME).get('current');
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+    db.close();
+    return session;
+  },
+
+  async loadPersistent() {
+    try {
+      const indexedSession = await this.loadIndexedDB();
+      if (indexedSession?.cards?.length) return indexedSession;
+    } catch { /* fallback localStorage */ }
+    return this.loadLocal();
   },
 
   loadLocal() {
@@ -347,7 +408,15 @@ const StorageAdapter = {
     } catch { return null; }
   },
 
-  clearLocal() { localStorage.removeItem(this.KEY); },
+  clearLocal() {
+    localStorage.removeItem(this.KEY);
+    this.openDB().then(db => new Promise(resolve => {
+      const transaction = db.transaction(this.STORE_NAME, 'readwrite');
+      transaction.objectStore(this.STORE_NAME).delete('current');
+      transaction.oncomplete = () => { db.close(); resolve(); };
+      transaction.onerror = () => { db.close(); resolve(); };
+    })).catch(() => {});
+  },
 
   async exportJSON(embedImages = false) {
     const session = JSON.parse(JSON.stringify(state.session));
@@ -1154,7 +1223,7 @@ function exportDialog() {
 // INIT
 // ═══════════════════════════════════════════════════════════════════
 
-function init() {
+async function init() {
   const $imgs = document.getElementById('file-images');
   const $json = document.getElementById('file-json');
 
@@ -1311,7 +1380,7 @@ function init() {
   });
 
   // ── Restauration depuis localStorage
-  const saved = StorageAdapter.loadLocal();
+  const saved = await StorageAdapter.loadPersistent();
   if (saved?.cards?.length) {
     state.session = saved;
     if (state.session.cards.every(card => card.imagePath?.startsWith('images_cube/'))) {
@@ -1319,11 +1388,13 @@ function init() {
     }
     toast('Session précédente restaurée. Re-importez vos images si nécessaire.', false, 4500);
     render();
+    StorageAdapter.saveLocal();
   } else {
     loadDefaultSession()
       .then(session => {
         state.session = session;
         render();
+        StorageAdapter.saveLocal();
       })
       .catch(error => {
         console.warn('Images par défaut indisponibles:', error);
