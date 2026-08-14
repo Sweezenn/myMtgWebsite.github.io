@@ -1023,6 +1023,20 @@ function nav(dir) {
   StorageAdapter.saveLocal();
 }
 
+function swipeNav(dir) {
+  if (!state.session || state.ui.view !== 'focus') return;
+  const next = state.ui.currentCardIndex + dir;
+  if (next < 0 || next >= state.session.cards.length) return;
+  const focusBody = document.getElementById('focus-body');
+  focusBody.classList.remove('swipe-in-left', 'swipe-in-right', 'swipe-out-left', 'swipe-out-right');
+  focusBody.classList.add(dir > 0 ? 'swipe-out-left' : 'swipe-out-right');
+  window.setTimeout(() => {
+    nav(dir);
+    focusBody.classList.add(dir > 0 ? 'swipe-in-right' : 'swipe-in-left');
+    window.setTimeout(() => focusBody.classList.remove('swipe-in-left', 'swipe-in-right'), 180);
+  }, 150);
+}
+
 function render() {
   if (!state.session?.cards.length) switchView('empty');
   else if (state.ui.view === 'empty') switchView('gallery');
@@ -1126,7 +1140,7 @@ function init() {
     const deltaX = touch.clientX - touchStartX;
     const deltaY = touch.clientY - touchStartY;
     if (state.ui.view !== 'focus' || Math.abs(deltaX) < 60 || Math.abs(deltaX) < Math.abs(deltaY)) return;
-    nav(deltaX < 0 ? 1 : -1);
+    swipeNav(deltaX < 0 ? 1 : -1);
   }, { passive: true });
 
   // ── Notes
