@@ -1035,8 +1035,8 @@ function render() {
 // ═══════════════════════════════════════════════════════════════════
 
 function exportDialog() {
-  const hasImages = state.session?.cards.some(card => getImageSrc(card));
-  const embed = hasImages && confirm(
+  const hasCards = Boolean(state.session?.cards.length);
+  const embed = hasCards && confirm(
     'Inclure les images dans le fichier JSON ?\n\n' +
     'OK → fichier autoportant et partageable (plus volumineux)\n' +
     'Annuler → fichier léger (ré-importer les images à la prochaine ouverture)'
