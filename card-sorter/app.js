@@ -1159,8 +1159,10 @@ function init() {
   document.getElementById('btn-prev').addEventListener('click', () => nav(-1));
   document.getElementById('btn-next').addEventListener('click', () => nav(1));
   document.getElementById('btn-back').addEventListener('click', () => switchView('gallery'));
-  document.getElementById('btn-zoom-image').addEventListener('click', () => {
-    document.getElementById('focus-left').classList.toggle('zoomed');
+  document.getElementById('btn-zoom-image').addEventListener('click', event => {
+    const zoomed = document.getElementById('focus-left').classList.toggle('zoomed');
+    event.currentTarget.textContent = zoomed ? '⤡ Réduire' : '⤢ Agrandir';
+    event.currentTarget.setAttribute('aria-expanded', String(zoomed));
   });
 
   let touchStartX = 0;

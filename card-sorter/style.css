@@ -446,6 +446,12 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   border: 0;
 }
 #focus-left.zoomed #focus-img { max-width: 90vw; max-height: 82vh; }
+#focus-left.zoomed #focus-img {
+  width: auto;
+  height: min(82vh, 82vw);
+  max-width: 90vw;
+  max-height: 82vh;
+}
 #focus-body.swipe-out-left { animation: swipe-out-left .15s ease-in forwards; }
 #focus-body.swipe-out-right { animation: swipe-out-right .15s ease-in forwards; }
 #focus-body.swipe-in-left { animation: swipe-in-left .18s ease-out both; }
@@ -966,6 +972,12 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   .dim-scale .scale-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
   .scale-btn { min-width: 0; height: 42px; padding: 6px 4px; font-size: 12px; }
   #focus-notes { min-height: 44px; }
+  #focus-left.zoomed #focus-img {
+    width: auto;
+    height: min(78dvh, 88vw);
+    max-width: 94vw;
+    max-height: 78dvh;
+  }
 }
 #toast.show  { opacity: 1; }
 #toast.error { border-color: var(--red); background: #1f0909; color: #fca5a5; }
