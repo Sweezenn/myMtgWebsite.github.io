@@ -972,7 +972,7 @@ const KeyboardHandler = {
       if (k === 'arrowright' || k === ' ') { e.preventDefault(); nav(1);  return; }
       if (k === 'arrowleft')               { e.preventDefault(); nav(-1); return; }
       if (k === 'escape')                  { switchView('gallery'); return; }
-      if (k === 'n')                       { document.getElementById('focus-notes').focus(); return; }
+      if (k === 'n')                       { e.preventDefault(); document.getElementById('focus-notes').focus(); return; }
 
       const card = state.session?.cards[state.ui.currentCardIndex];
       if (!card) return;
