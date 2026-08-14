@@ -907,20 +907,33 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     max-width: none;
     flex: 0 0 auto;
     min-height: 0;
-    padding: 12px;
+    padding: 8px 10px;
     justify-content: flex-start;
   }
   #focus-right {
     width: 100%;
     max-width: none;
     flex: 0 0 auto;
+    padding: 8px 10px;
+    gap: 6px;
   }
   #focus-img {
     width: auto;
     height: auto;
     max-width: 100%;
-    max-height: calc(100dvh - 150px);
+    max-height: min(36dvh, 360px);
   }
+  .dim-block { border-radius: 5px; }
+  .dim-header { padding: 6px 9px; font-size: 11px; }
+  .dim-body { padding: 7px 9px; }
+  .dim-single { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+  .dim-single .option-row { min-width: 0; min-height: 42px; padding: 7px 4px; font-size: 12px; }
+  .option-label { font-size: 12px; text-align: center; }
+  .dim-boolean .bool-row { gap: 4px; }
+  .bool-btn { min-width: 0; flex: 1; min-height: 42px; padding: 7px 8px; font-size: 12px; }
+  .dim-scale .scale-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+  .scale-btn { min-width: 0; height: 42px; padding: 6px 4px; font-size: 12px; }
+  #focus-notes { min-height: 44px; }
 }
 #toast.show  { opacity: 1; }
 #toast.error { border-color: var(--red); background: #1f0909; color: #fca5a5; }
