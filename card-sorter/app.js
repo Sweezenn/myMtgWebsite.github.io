@@ -641,11 +641,6 @@ const FocusView = {
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'option-row' + (val === opt.id ? ' selected' : '');
-      if (opt.shortcut) {
-        const kbd = document.createElement('span');
-        kbd.className = 'option-kbd'; kbd.textContent = opt.shortcut.toUpperCase();
-        row.appendChild(kbd);
-      }
       const dot = document.createElement('span');
       dot.className = 'option-dot'; dot.style.background = opt.color;
       const lbl = document.createElement('span');
@@ -672,11 +667,6 @@ const FocusView = {
         btn.style.borderColor = opt.color;
         btn.style.color       = contrastColor(opt.color);
       }
-      if (opt.shortcut) {
-        const kbd = document.createElement('span');
-        kbd.className = 'option-kbd'; kbd.textContent = opt.shortcut.toUpperCase();
-        btn.appendChild(kbd);
-      }
       btn.append(document.createTextNode(opt.label));
       btn.addEventListener('click', () => { TaggingEngine.toggle(card, dim.id, opt.id); this.render(); updateProgress(); });
       inner.appendChild(btn);
@@ -702,10 +692,6 @@ const FocusView = {
       });
       row.appendChild(btn);
     }
-    const lbl = document.createElement('span');
-    lbl.className = 'scale-label';
-    lbl.textContent = dim.shortcut ? `(${dim.shortcut.toUpperCase()}) pour cycler` : '';
-    row.appendChild(lbl);
     wrap.appendChild(row);
     return wrap;
   },
@@ -718,17 +704,10 @@ const FocusView = {
     const value = TaggingEngine.get(card, dim.id);
     const selected = value === true || value === false;
     const button = document.createElement('button');
-    const shortcutHint = dim.shortcut ? ` (${dim.shortcut.toUpperCase()})` : '';
     button.className = `bool-btn ${selected ? (value ? 'yes' : 'no') : 'unset'} active`;
     button.textContent = value === null || value === undefined
       ? (dim.unselectedLabel || 'Non sélectionné')
       : value ? (dim.trueLabel || 'Oui') : (dim.falseLabel || 'Non');
-    if (shortcutHint) {
-      const shortcut = document.createElement('span');
-      shortcut.className = 'option-kbd';
-      shortcut.textContent = dim.shortcut.toUpperCase();
-      button.appendChild(shortcut);
-    }
     button.setAttribute('aria-pressed', selected ? String(value) : 'false');
     button.addEventListener('click', () => { TaggingEngine.toggleBool(card, dim.id); this.render(); updateProgress(); });
     row.appendChild(button);
