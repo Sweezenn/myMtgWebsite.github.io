@@ -697,9 +697,15 @@ const FocusView = {
     const button = document.createElement('button');
     const shortcutHint = dim.shortcut ? ` (${dim.shortcut.toUpperCase()})` : '';
     button.className = `bool-btn ${selected ? (value ? 'yes' : 'no') : 'unset'} active`;
-    button.textContent = (value === null || value === undefined
+    button.textContent = value === null || value === undefined
       ? (dim.unselectedLabel || 'Non sélectionné')
-      : value ? (dim.trueLabel || 'Oui') : (dim.falseLabel || 'Non')) + shortcutHint;
+      : value ? (dim.trueLabel || 'Oui') : (dim.falseLabel || 'Non');
+    if (shortcutHint) {
+      const shortcut = document.createElement('span');
+      shortcut.className = 'option-kbd';
+      shortcut.textContent = dim.shortcut.toUpperCase();
+      button.appendChild(shortcut);
+    }
     button.setAttribute('aria-pressed', selected ? String(value) : 'false');
     button.addEventListener('click', () => { TaggingEngine.toggleBool(card, dim.id); this.render(); updateProgress(); });
     row.appendChild(button);
