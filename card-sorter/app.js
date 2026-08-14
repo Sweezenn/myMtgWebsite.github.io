@@ -1023,17 +1023,24 @@ function nav(dir) {
   StorageAdapter.saveLocal();
 }
 
+let swipeInProgress = false;
+
 function swipeNav(dir) {
-  if (!state.session || state.ui.view !== 'focus') return;
+  if (swipeInProgress || !state.session || state.ui.view !== 'focus') return;
   const next = state.ui.currentCardIndex + dir;
   if (next < 0 || next >= state.session.cards.length) return;
+  swipeInProgress = true;
   const focusBody = document.getElementById('focus-body');
   focusBody.classList.remove('swipe-in-left', 'swipe-in-right', 'swipe-out-left', 'swipe-out-right');
   focusBody.classList.add(dir > 0 ? 'swipe-out-left' : 'swipe-out-right');
   window.setTimeout(() => {
     nav(dir);
+    focusBody.classList.remove('swipe-out-left', 'swipe-out-right');
     focusBody.classList.add(dir > 0 ? 'swipe-in-right' : 'swipe-in-left');
-    window.setTimeout(() => focusBody.classList.remove('swipe-in-left', 'swipe-in-right'), 180);
+    window.setTimeout(() => {
+      focusBody.classList.remove('swipe-in-left', 'swipe-in-right');
+      swipeInProgress = false;
+    }, 180);
   }, 150);
 }
 
@@ -1131,11 +1138,13 @@ function init() {
   let touchStartY = 0;
   const focusBody = document.getElementById('focus-body');
   focusBody.addEventListener('touchstart', event => {
+    if (swipeInProgress) return;
     const touch = event.changedTouches[0];
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
   }, { passive: true });
   focusBody.addEventListener('touchend', event => {
+    if (swipeInProgress) return;
     const touch = event.changedTouches[0];
     const deltaX = touch.clientX - touchStartX;
     const deltaY = touch.clientY - touchStartY;
