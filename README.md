@@ -11,12 +11,14 @@ Ce site expose deux projets de cartes MTG créées sur mesure :
 | **Jeko** | Set custom avec 5 mécaniques originales : *Curse, Guard, Prayer, Last Breath, Tribal* | ~293 |
 | **MCC – Magic Custom Cube** | Cube draft custom (projet 2024) — Cartes + Tokens | ~380 cartes + 47 tokens |
 | **Card Sorter** | Outil local de tri et d'annotation des cartes du cube | variable |
+| **Tutoriel** | Guide d'utilisation du site et de Card Sorter | - |
 
 ## 🏗️ Architecture
 
 ```
 myMtgWebsite.github.io/
 ├── index.html                          # Page d'accueil (Welcome)
+├── tutorial.html                       # Tutoriel d'utilisation du site et du Card Sorter
 ├── jeko/
 │   └── index.html                      # Page Jeko (set custom)
 ├── card-sorter/
