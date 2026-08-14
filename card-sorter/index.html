@@ -57,13 +57,16 @@
   <section id="view-gallery" class="view hidden">
     <div id="gallery-toolbar">
       <input id="search-input" type="text" placeholder="🔍 Rechercher une carte…" autocomplete="off">
+      <button id="btn-toggle-filters" class="btn-secondary filter-toggle" type="button" aria-expanded="false">☷ Filtres</button>
+      <button id="btn-sort-mode" class="btn-secondary" title="Aller à la première carte non triée">▶ Trier (prochaine non triée)</button>
+    </div>
+    <div id="filter-panel">
       <div id="filter-row">
         <button class="filter-btn active" data-filter="all">Toutes</button>
         <button class="filter-btn"        data-filter="unreviewed">Non triées</button>
       </div>
-      <button id="btn-sort-mode" class="btn-secondary" title="Aller à la première carte non triée">▶ Trier (prochaine non triée)</button>
+      <div id="dimension-filters" aria-label="Filtres par dimension"></div>
     </div>
-    <div id="dimension-filters" aria-label="Filtres par dimension"></div>
     <div id="card-grid"></div>
   </section>
 

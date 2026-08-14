@@ -1113,6 +1113,22 @@ function init() {
   document.getElementById('btn-next').addEventListener('click', () => nav(1));
   document.getElementById('btn-back').addEventListener('click', () => switchView('gallery'));
 
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const focusBody = document.getElementById('focus-body');
+  focusBody.addEventListener('touchstart', event => {
+    const touch = event.changedTouches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  }, { passive: true });
+  focusBody.addEventListener('touchend', event => {
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX;
+    const deltaY = touch.clientY - touchStartY;
+    if (state.ui.view !== 'focus' || Math.abs(deltaX) < 60 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+    nav(deltaX < 0 ? 1 : -1);
+  }, { passive: true });
+
   // ── Notes
   document.getElementById('focus-notes').addEventListener('input', e => {
     const card = state.session?.cards[state.ui.currentCardIndex];
@@ -1143,6 +1159,11 @@ function init() {
     if (!state.session?.cards.length) return;
     const first = state.session.cards.findIndex(c => !TaggingEngine.isReviewed(c));
     openFocus(first >= 0 ? first : 0);
+  });
+  document.getElementById('btn-toggle-filters').addEventListener('click', e => {
+    const panel = document.getElementById('filter-panel');
+    const expanded = panel.classList.toggle('open');
+    e.currentTarget.setAttribute('aria-expanded', String(expanded));
   });
 
   // ── Modal dimensions

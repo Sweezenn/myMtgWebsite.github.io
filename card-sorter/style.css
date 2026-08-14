@@ -234,7 +234,15 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 #search-input:focus   { outline: none; border-color: var(--gold); }
 #search-input::placeholder { color: var(--text-3); }
 
-#filter-row { display: flex; gap: 6px; }
+#filter-panel { display: block; }
+#filter-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--bg-3);
+}
+.filter-toggle { display: none; }
 .filter-btn {
   background: transparent;
   border: 1px solid var(--bg-4);
@@ -860,6 +868,12 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     border-top: 1px solid var(--bg-3);
     padding-top: 6px;
   }
+
+  #filter-panel { display: none; }
+  #filter-panel.open { display: block; }
+  .filter-toggle { display: inline-block; }
+  #filter-row { padding: 8px 12px; }
+  #dimension-filters { padding: 8px 12px; }
 
   #focus-body {
     flex-direction: column;
