@@ -331,16 +331,21 @@ async function loadDefaultSession() {
 const StorageAdapter = {
   KEY: 'mtg-cube-sorter',
   DB_NAME: 'mtg-cube-sorter-db',
-  DB_VERSION: 1,
+  DB_VERSION: 2,
   STORE_NAME: 'sessions',
+  HISTORY_STORE_NAME: 'history',
+  HISTORY_LIMIT: 10,
   saveQueue: Promise.resolve(),
+  lastHistorySignature: '',
 
   openDB() {
     return new Promise((resolve, reject) => {
       if (!window.indexedDB) { reject(new Error('IndexedDB indisponible')); return; }
       const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
       request.onupgradeneeded = () => {
-        request.result.createObjectStore(this.STORE_NAME);
+        const db = request.result;
+        if (!db.objectStoreNames.contains(this.STORE_NAME)) db.createObjectStore(this.STORE_NAME);
+        if (!db.objectStoreNames.contains(this.HISTORY_STORE_NAME)) db.createObjectStore(this.HISTORY_STORE_NAME, { keyPath: 'id' });
       };
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
@@ -359,6 +364,42 @@ const StorageAdapter = {
 
   async _saveIndexedDB() {
     if (!state.session) return;
+    const copy = await this._prepareSessionCopy();
+    const signature = JSON.stringify(copy);
+    for (const card of copy.cards) {
+      delete card._historyMarker;
+    }
+    const db = await this.openDB();
+    await new Promise((resolve, reject) => {
+      const stores = [this.STORE_NAME];
+      if (signature !== this.lastHistorySignature) stores.push(this.HISTORY_STORE_NAME);
+      const transaction = db.transaction(stores, 'readwrite');
+      transaction.objectStore(this.STORE_NAME).put(copy, 'current');
+      if (stores.length > 1) {
+        const history = transaction.objectStore(this.HISTORY_STORE_NAME);
+        history.put({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, savedAt: new Date().toISOString(), cards: copy.cards.length, session: copy });
+        let kept = 0;
+        history.openCursor(null, 'prev').onsuccess = event => {
+          const cursor = event.target.result;
+          if (!cursor) return;
+          if (kept++ < this.HISTORY_LIMIT) { cursor.continue(); return; }
+          const deleteRequest = cursor.delete();
+          deleteRequest.onsuccess = () => cursor.continue();
+        };
+      }
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error);
+    });
+    db.close();
+    this.lastHistorySignature = signature;
+    const status = document.getElementById('save-status');
+    if (status) {
+      status.textContent = 'Sauvegardée automatiquement';
+      status.classList.remove('pending');
+    }
+  },
+
+  async _prepareSessionCopy() {
     const copy = JSON.parse(JSON.stringify(state.session));
     for (const card of copy.cards) {
       const src = getImageSrc(card);
@@ -367,19 +408,36 @@ const StorageAdapter = {
         card.imageData = await blobToDataURL(await fetch(src).then(response => response.blob()));
       } catch { /* l'image statique sera rechargée par son chemin */ }
     }
+    return copy;
+  },
+
+  async listHistory() {
     const db = await this.openDB();
-    await new Promise((resolve, reject) => {
-      const transaction = db.transaction(this.STORE_NAME, 'readwrite');
-      transaction.objectStore(this.STORE_NAME).put(copy, 'current');
-      transaction.oncomplete = resolve;
-      transaction.onerror = () => reject(transaction.error);
+    const records = await new Promise((resolve, reject) => {
+      const request = db.transaction(this.HISTORY_STORE_NAME, 'readonly').objectStore(this.HISTORY_STORE_NAME).getAll();
+      request.onsuccess = () => resolve(request.result.sort((a, b) => b.savedAt.localeCompare(a.savedAt)));
+      request.onerror = () => reject(request.error);
     });
     db.close();
-    const status = document.getElementById('save-status');
-    if (status) {
-      status.textContent = 'Sauvegardée automatiquement';
-      status.classList.remove('pending');
-    }
+    return records;
+  },
+
+  async restoreHistory(id) {
+    const db = await this.openDB();
+    const record = await new Promise((resolve, reject) => {
+      const request = db.transaction(this.HISTORY_STORE_NAME, 'readonly').objectStore(this.HISTORY_STORE_NAME).get(id);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    db.close();
+    if (!record?.session) throw new Error('Version introuvable');
+    state.session = record.session;
+    state.imageMap = {};
+    for (const card of state.session.cards) if (card.imageData) state.imageMap[card.imagePath] = card.imageData;
+    state.ui.currentCardIndex = 0;
+    state.ui.unsaved = false;
+    this.saveLocal();
+    render();
   },
 
   async loadIndexedDB() {
@@ -1219,6 +1277,40 @@ function exportDialog() {
   StorageAdapter.exportJSON(embed).then(() => toast('Session exportée ✓'));
 }
 
+async function openHistory() {
+  const list = document.getElementById('history-list');
+  const overlay = document.getElementById('history-overlay');
+  list.innerHTML = '<p class="history-empty">Chargement des sauvegardes…</p>';
+  overlay.classList.remove('hidden');
+  try {
+    const records = await StorageAdapter.listHistory();
+    list.innerHTML = '';
+    if (!records.length) {
+      list.innerHTML = '<p class="history-empty">Aucune version précédente.</p>';
+      return;
+    }
+    records.forEach(record => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      const date = new Date(record.savedAt).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
+      item.innerHTML = `<div><strong>${date}</strong><small>${record.cards} carte(s)</small></div>`;
+      const restore = document.createElement('button');
+      restore.className = 'btn-secondary';
+      restore.textContent = 'Restaurer';
+      restore.addEventListener('click', async () => {
+        if (!confirm(`Restaurer la version du ${date} ? Les modifications actuelles seront remplacées.`)) return;
+        await StorageAdapter.restoreHistory(record.id);
+        overlay.classList.add('hidden');
+        toast('Version restaurée ✓');
+      });
+      item.appendChild(restore);
+      list.appendChild(item);
+    });
+  } catch {
+    list.innerHTML = '<p class="history-empty">Historique indisponible dans ce navigateur.</p>';
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════
@@ -1271,6 +1363,7 @@ async function init() {
   });
   document.getElementById('btn-import-json').addEventListener('click',    () => $json.click());
   document.getElementById('btn-export-json').addEventListener('click',    exportDialog);
+  document.getElementById('btn-open-history').addEventListener('click', openHistory);
   document.getElementById('btn-open-dim-editor').addEventListener('click', () => {
     if (!state.session) { toast('Créez ou chargez une session d\'abord.', true); return; }
     DimensionEditor.open();
@@ -1363,6 +1456,10 @@ async function init() {
   });
   document.getElementById('btn-add-dim').addEventListener('click', () => DimensionEditor.addNew());
   document.getElementById('btn-export-config').addEventListener('click', () => StorageAdapter.exportConfig());
+  document.getElementById('btn-close-history').addEventListener('click', () => document.getElementById('history-overlay').classList.add('hidden'));
+  document.getElementById('history-overlay').addEventListener('click', event => {
+    if (event.target.id === 'history-overlay') event.currentTarget.classList.add('hidden');
+  });
 
   // ── Clavier global
   document.addEventListener('keydown', e => KeyboardHandler.handle(e));
