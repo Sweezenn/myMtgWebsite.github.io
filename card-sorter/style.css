@@ -445,12 +445,12 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   background: rgba(10,10,20,.97);
   border: 0;
 }
-#focus-left.zoomed #focus-img { max-width: 90vw; max-height: 82vh; }
 #focus-left.zoomed #focus-img {
   width: auto;
-  height: min(82vh, 82vw);
+  height: min(calc(100vh - 80px), 92vw);
   max-width: 90vw;
-  max-height: 82vh;
+  max-height: calc(100vh - 80px);
+  flex: 0 0 auto;
 }
 #focus-body.swipe-out-left { animation: swipe-out-left .15s ease-in forwards; }
 #focus-body.swipe-out-right { animation: swipe-out-right .15s ease-in forwards; }
@@ -958,9 +958,8 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     max-width: 100%;
     max-height: min(36dvh, 360px);
   }
-  .image-zoom-btn { min-height: 38px; }
+  .image-zoom-btn { display: none; }
   #focus-left.zoomed { padding: 18px; }
-  #focus-left.zoomed #focus-img { max-width: 94vw; max-height: 78dvh; }
   .dim-block { border-radius: 5px; }
   .dim-header { padding: 6px 9px; font-size: 11px; }
   .dim-body { padding: 7px 9px; }
