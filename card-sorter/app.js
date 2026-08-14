@@ -1003,6 +1003,7 @@ function switchView(view) {
   if (view !== 'focus') {
     swipeTransitionId++;
     swipeInProgress = false;
+    touchActive = false;
     document.getElementById('focus-body')?.classList.remove('swipe-in-left', 'swipe-in-right', 'swipe-out-left', 'swipe-out-right');
   }
   state.ui.view = view;
@@ -1031,6 +1032,7 @@ function nav(dir, fromSwipe = false) {
 
 let swipeInProgress = false;
 let swipeTransitionId = 0;
+let touchActive = false;
 
 function swipeNav(dir) {
   if (swipeInProgress || !state.session || state.ui.view !== 'focus') return;
@@ -1152,15 +1154,18 @@ function init() {
     const touch = event.changedTouches[0];
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
+    touchActive = true;
   }, { passive: true });
   focusBody.addEventListener('touchend', event => {
-    if (swipeInProgress) return;
+    if (swipeInProgress || !touchActive) return;
+    touchActive = false;
     const touch = event.changedTouches[0];
     const deltaX = touch.clientX - touchStartX;
     const deltaY = touch.clientY - touchStartY;
     if (state.ui.view !== 'focus' || Math.abs(deltaX) < 60 || Math.abs(deltaX) < Math.abs(deltaY)) return;
     swipeNav(deltaX < 0 ? 1 : -1);
   }, { passive: true });
+  focusBody.addEventListener('touchcancel', () => { touchActive = false; }, { passive: true });
 
   // ── Notes
   document.getElementById('focus-notes').addEventListener('input', e => {
