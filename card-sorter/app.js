@@ -86,6 +86,8 @@ const state = {
   }
 };
 
+const DEFAULT_IMAGE_MANIFEST = 'images_cube/manifest.json';
+
 // ═══════════════════════════════════════════════════════════════════
 // UTILITIES
 // ═══════════════════════════════════════════════════════════════════
@@ -96,7 +98,7 @@ function getDim(id) {
 
 function getImageSrc(card) {
   if (card.imageData) return card.imageData;
-  return state.imageMap[card.imagePath] || null;
+  return state.imageMap[card.imagePath] || (card.imagePath?.startsWith('images_cube/') ? card.imagePath : null);
 }
 
 function getFilteredCards() {
@@ -284,6 +286,34 @@ const SessionManager = {
 };
 
 function today() { return new Date().toISOString().slice(0, 10); }
+
+function imageNumber(card) {
+  const match = card.imagePath?.match(/(?:^|\/)(\d+)_/);
+  return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+}
+
+function sortDefaultCards(cards) {
+  cards.sort((a, b) => imageNumber(a) - imageNumber(b));
+  return cards;
+}
+
+async function loadDefaultSession() {
+  const response = await fetch(DEFAULT_IMAGE_MANIFEST);
+  if (!response.ok) throw new Error(`Impossible de charger ${DEFAULT_IMAGE_MANIFEST}`);
+  const imageNames = await response.json();
+  const session = SessionManager.createNew();
+  session.meta.description = 'Cube images par défaut';
+  session.cards = sortDefaultCards(imageNames.map((imageName, index) => ({
+    id:              `default_card_${String(index + 1).padStart(3, '0')}`,
+    name:            imageName.replace(/\.[^.]+$/, '').replace(/^\d+_/, '').replace(/[-_]+/g, ' '),
+    imagePath:       `images_cube/${imageName}`,
+    imageData:       null,
+    classifications: {},
+    notes:           '',
+    flagged:         false
+  })));
+  return session;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // STORAGE ADAPTER
@@ -1136,12 +1166,23 @@ function init() {
 
   // ── Restauration depuis localStorage
   const saved = StorageAdapter.loadLocal();
-  if (saved) {
+  if (saved?.cards?.length) {
     state.session = saved;
+    if (state.session.cards.every(card => card.imagePath?.startsWith('images_cube/'))) {
+      sortDefaultCards(state.session.cards);
+    }
     toast('Session précédente restaurée. Re-importez vos images si nécessaire.', false, 4500);
     render();
   } else {
-    render();
+    loadDefaultSession()
+      .then(session => {
+        state.session = session;
+        render();
+      })
+      .catch(error => {
+        console.warn('Images par défaut indisponibles:', error);
+        render();
+      });
   }
 }
 
