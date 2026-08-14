@@ -83,6 +83,7 @@ const state = {
     currentCardIndex: 0,
     unsaved:          false,
     dimensionFilters: {},
+    cardSize:         'medium',
   }
 };
 
@@ -504,6 +505,7 @@ const GalleryView = {
   render() {
     const grid  = document.getElementById('card-grid');
     const cards = getFilteredCards();
+    grid.className = `card-grid-size-${state.ui.cardSize}`;
     grid.innerHTML = '';
     if (!cards.length) {
       grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-3);padding:48px 0;font-size:16px">Aucune carte correspondante.</p>';
@@ -1279,6 +1281,10 @@ function init() {
     const panel = document.getElementById('filter-panel');
     const expanded = panel.classList.toggle('open');
     e.currentTarget.setAttribute('aria-expanded', String(expanded));
+  });
+  document.getElementById('card-size').addEventListener('change', event => {
+    state.ui.cardSize = event.target.value;
+    GalleryView.render();
   });
 
   // ── Modal dimensions
