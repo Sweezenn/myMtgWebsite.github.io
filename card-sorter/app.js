@@ -1227,6 +1227,8 @@ function nav(dir, fromSwipe = false) {
   if (next < 0 || next >= state.session.cards.length) return;
   state.ui.currentCardIndex = next;
   FocusView.render();
+  document.getElementById('focus-body')?.scrollTo(0, 0);
+  document.getElementById('focus-right')?.scrollTo(0, 0);
   StorageAdapter.saveLocal();
 }
 
@@ -1267,14 +1269,24 @@ function render() {
 // EXPORT DIALOG
 // ═══════════════════════════════════════════════════════════════════
 
-function exportDialog() {
-  const hasCards = Boolean(state.session?.cards.length);
-  const embed = hasCards && confirm(
-    'Inclure les images dans le fichier JSON ?\n\n' +
-    'OK → fichier autoportant et partageable (plus volumineux)\n' +
-    'Annuler → fichier léger (ré-importer les images à la prochaine ouverture)'
-  );
-  StorageAdapter.exportJSON(embed).then(() => toast('Session exportée ✓'));
+function chooseExportMode() {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('save-choice-overlay');
+    const finish = value => { overlay.classList.add('hidden'); resolve(value); };
+    overlay.classList.remove('hidden');
+    document.getElementById('btn-save-with-images').onclick = () => finish(true);
+    document.getElementById('btn-save-without-images').onclick = () => finish(false);
+    document.getElementById('btn-save-cancel').onclick = () => finish(null);
+    document.getElementById('btn-cancel-save').onclick = () => finish(null);
+  });
+}
+
+async function exportDialog() {
+  if (!state.session?.cards.length) return;
+  const embed = await chooseExportMode();
+  if (embed === null) return;
+  await StorageAdapter.exportJSON(embed);
+  toast('Session exportée ✓');
 }
 
 async function openHistory() {

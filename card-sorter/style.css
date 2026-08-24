@@ -763,6 +763,28 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .shortcut-conflicts.visible { display: block; }
 .shortcut-conflict { border-color: var(--red) !important; color: #fca5a5 !important; box-shadow: 0 0 0 1px rgba(239,68,68,.25); }
 
+#save-choice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0,0,0,.75);
+}
+#save-choice-modal {
+  width: min(100%, 560px);
+  padding: 0 20px 20px;
+  background: var(--bg-1);
+  border: 1px solid var(--gold-dark);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+#save-choice-modal p { color: var(--text-2); margin: 18px 0 12px; }
+.save-choice-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.save-choice-actions button { flex: 1 1 150px; min-height: 42px; }
+
 #history-overlay {
   position: fixed;
   inset: 0;
@@ -989,6 +1011,8 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   .header-actions { gap: 4px; width: 100%; overflow-x: auto; margin-left: 0; }
   .header-actions button { padding: 6px 9px; font-size: 11px; }
   #btn-open-history { display: none; }
+  #save-choice-modal { padding: 0 14px 14px; }
+  .save-choice-actions { flex-direction: column; }
   #gallery-toolbar { padding: 8px 10px; gap: 6px; }
   #search-input { width: min(100%, 220px); flex: 1 1 150px; }
   .gallery-control { font-size: 11px; }
