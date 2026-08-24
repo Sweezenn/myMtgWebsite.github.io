@@ -215,6 +215,12 @@ function updateProgress() {
   document.getElementById('progress-label').textContent    = `${done} / ${total} triées (${pct}%)`;
 }
 
+function autoResizeTextarea(textarea) {
+  textarea.style.height = 'auto';
+  textarea.style.height = `${Math.min(textarea.scrollHeight, 280)}px`;
+  textarea.style.overflowY = textarea.scrollHeight > 280 ? 'auto' : 'hidden';
+}
+
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   Object.assign(document.createElement('a'), { href: url, download: filename }).click();
@@ -705,7 +711,9 @@ const FocusView = {
     panel.innerHTML = '';
     state.session.dimensions.forEach(dim => panel.appendChild(this._block(dim, card)));
 
-    document.getElementById('focus-notes').value = card.notes || '';
+    const notes = document.getElementById('focus-notes');
+    notes.value = card.notes || '';
+    autoResizeTextarea(notes);
 
   },
 
@@ -1423,7 +1431,7 @@ async function init() {
   // ── Notes
   document.getElementById('focus-notes').addEventListener('input', e => {
     const card = state.session?.cards[state.ui.currentCardIndex];
-    if (card) { card.notes = e.target.value; SessionManager.touch(); StorageAdapter.saveLocal(); }
+    if (card) { card.notes = e.target.value; autoResizeTextarea(e.target); SessionManager.touch(); StorageAdapter.saveLocal(); }
   });
 
   // ── Reset

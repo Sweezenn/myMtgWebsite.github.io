@@ -708,7 +708,10 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   padding: 8px;
   font-size: 13px;
   font-family: inherit;
-  resize: vertical;
+  resize: none;
+  min-height: 56px;
+  max-height: 280px;
+  overflow-y: hidden;
   transition: border-color .15s;
 }
 #focus-notes:focus { outline: none; border-color: var(--gold); }
