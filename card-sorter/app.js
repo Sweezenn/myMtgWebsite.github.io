@@ -74,8 +74,10 @@ const DEFAULT_DIMENSIONS = [
 // ═══════════════════════════════════════════════════════════════════
 
 const state = {
-  session:  null,     // { meta, dimensions, cards }
-  imageMap: {},       // imagePath → objectURL | dataURL
+  session:   null,    // { meta, dimensions, cards }
+  imageMap:  {},      // imagePath → objectURL | dataURL
+  versions:  [],      // [{ id, label, date, dir }] — ordre chronologique, la dernière est la plus récente
+  versionId: null,    // version du cube actuellement ouverte
   ui: {
     view:             'empty',   // 'empty' | 'gallery' | 'focus'
     filter:           'all',     // 'all' | 'unreviewed' | 'flagged'
@@ -87,7 +89,8 @@ const state = {
   }
 };
 
-const DEFAULT_IMAGE_MANIFEST = 'images_cube/manifest.json';
+const VERSIONS_FILE = 'versions.json';
+const FALLBACK_VERSIONS = [{ id: 'v1', label: 'V1', date: '', dir: 'images_cube/' }];
 
 // ═══════════════════════════════════════════════════════════════════
 // UTILITIES
@@ -97,9 +100,29 @@ function getDim(id) {
   return state.session?.dimensions.find(d => d.id === id) ?? null;
 }
 
+function getVersion(id = state.versionId) {
+  return state.versions.find(v => v.id === id) ?? null;
+}
+
+function latestVersion() {
+  return state.versions[state.versions.length - 1];
+}
+
+function isStaticImagePath(path) {
+  return !!path && state.versions.some(v => path.startsWith(v.dir));
+}
+
+// Version déclarée dans le fichier, sinon déduite du dossier des images
+function versionOfSession(session) {
+  const declared = session?.meta?.cubeVersion;
+  if (declared && getVersion(declared)) return declared;
+  const card = session?.cards?.find(c => isStaticImagePath(c.imagePath));
+  return card ? state.versions.find(v => card.imagePath.startsWith(v.dir)).id : null;
+}
+
 function getImageSrc(card) {
   if (card.imageData) return card.imageData;
-  return state.imageMap[card.imagePath] || (card.imagePath?.startsWith('images_cube/') ? card.imagePath : null);
+  return state.imageMap[card.imagePath] || (isStaticImagePath(card.imagePath) ? card.imagePath : null);
 }
 
 function getFilteredCards() {
@@ -217,8 +240,11 @@ function updateProgress() {
 
 function autoResizeTextarea(textarea) {
   textarea.style.height = 'auto';
-  textarea.style.height = `${Math.min(textarea.scrollHeight, 280)}px`;
-  textarea.style.overflowY = textarea.scrollHeight > 280 ? 'auto' : 'hidden';
+  const contentHeight = textarea.scrollHeight;
+  const borderHeight = textarea.offsetHeight - textarea.clientHeight;
+  const requiredHeight = contentHeight + borderHeight;
+  textarea.style.height = `${Math.min(requiredHeight, 280)}px`;
+  textarea.style.overflowY = requiredHeight > 280 ? 'auto' : 'hidden';
 }
 
 function downloadBlob(blob, filename) {
@@ -250,6 +276,7 @@ const SessionManager = {
     return {
       meta: {
         version:     '1.0',
+        cubeVersion: state.versionId,
         createdAt:   today(),
         updatedAt:   today(),
         author:      '',
@@ -312,16 +339,30 @@ function sortDefaultCards(cards) {
   return cards;
 }
 
-async function loadDefaultSession() {
-  const response = await fetch(DEFAULT_IMAGE_MANIFEST);
-  if (!response.ok) throw new Error(`Impossible de charger ${DEFAULT_IMAGE_MANIFEST}`);
+async function loadVersions() {
+  try {
+    const response = await fetch(VERSIONS_FILE);
+    if (!response.ok) throw new Error(`Impossible de charger ${VERSIONS_FILE}`);
+    const { versions } = await response.json();
+    if (Array.isArray(versions) && versions.length) return versions;
+  } catch (error) {
+    console.warn('Liste des versions indisponible:', error);
+  }
+  return FALLBACK_VERSIONS;
+}
+
+async function loadDefaultSession(version) {
+  const manifest = `${version.dir}manifest.json`;
+  const response = await fetch(manifest);
+  if (!response.ok) throw new Error(`Impossible de charger ${manifest}`);
   const imageNames = await response.json();
   const session = SessionManager.createNew();
-  session.meta.description = 'Cube images par défaut';
+  session.meta.cubeVersion = version.id;
+  session.meta.description = `Cube ${version.label}`;
   session.cards = sortDefaultCards(imageNames.map((imageName, index) => ({
     id:              `default_card_${String(index + 1).padStart(3, '0')}`,
     name:            imageName.replace(/\.[^.]+$/, '').replace(/^\d+_/, '').replace(/[-_]+/g, ' '),
-    imagePath:       `images_cube/${imageName}`,
+    imagePath:       `${version.dir}${imageName}`,
     imageData:       null,
     classifications: {},
     notes:           '',
@@ -358,19 +399,58 @@ const StorageAdapter = {
     });
   },
 
-  saveLocal() {
-    if (!state.session) return;
+  // Une sauvegarde par version du cube ; les clés sans suffixe sont l'ancien format (avant versions)
+  localKey(versionId)   { return `${this.KEY}:${versionId}`; },
+  sessionKey(versionId) { return `current:${versionId}`; },
+
+  async migrateLegacy() {
+    const owner = session => versionOfSession(session) ?? state.versions[0].id;
     try {
-      const copy = JSON.parse(JSON.stringify(state.session));
-      copy.cards.forEach(c => { c.imageData = null; }); // ne pas saturer localStorage
-      localStorage.setItem(this.KEY, JSON.stringify(copy));
-    } catch { /* quota dépassé — silencieux */ }
-    this.saveQueue = this.saveQueue.then(() => this._saveIndexedDB()).catch(() => {});
+      const raw = localStorage.getItem(this.KEY);
+      if (raw) {
+        const key = this.localKey(owner(JSON.parse(raw)));
+        if (!localStorage.getItem(key)) localStorage.setItem(key, raw);
+        localStorage.removeItem(this.KEY);
+      }
+    } catch { /* stockage indisponible */ }
+    try {
+      const db = await this.openDB();
+      await new Promise((resolve, reject) => {
+        const transaction = db.transaction(this.STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(this.STORE_NAME);
+        const legacyRequest = store.get('current');
+        legacyRequest.onsuccess = () => {
+          const legacy = legacyRequest.result;
+          if (!legacy) return;
+          const key = this.sessionKey(owner(legacy));
+          const existing = store.get(key);
+          existing.onsuccess = () => {
+            if (!existing.result) store.put(legacy, key);
+            store.delete('current');
+          };
+        };
+        transaction.oncomplete = resolve;
+        transaction.onerror = () => reject(transaction.error);
+      });
+      db.close();
+    } catch { /* IndexedDB indisponible */ }
   },
 
-  async _saveIndexedDB() {
+  saveLocal() {
     if (!state.session) return;
-    const copy = await this._prepareSessionCopy();
+    const session = state.session;
+    const versionId = state.versionId;
+    try {
+      const copy = JSON.parse(JSON.stringify(session));
+      copy.cards.forEach(c => { c.imageData = null; }); // ne pas saturer localStorage
+      localStorage.setItem(this.localKey(versionId), JSON.stringify(copy));
+    } catch { /* quota dépassé — silencieux */ }
+    this.saveQueue = this.saveQueue.then(() => this._saveIndexedDB(session, versionId)).catch(() => {});
+  },
+
+  async _saveIndexedDB(session, versionId) {
+    if (!session) return;
+    const copy = await this._prepareSessionCopy(session);
     const signature = JSON.stringify(copy);
     for (const card of copy.cards) {
       delete card._historyMarker;
@@ -380,10 +460,10 @@ const StorageAdapter = {
       const stores = [this.STORE_NAME];
       if (signature !== this.lastHistorySignature) stores.push(this.HISTORY_STORE_NAME);
       const transaction = db.transaction(stores, 'readwrite');
-      transaction.objectStore(this.STORE_NAME).put(copy, 'current');
+      transaction.objectStore(this.STORE_NAME).put(copy, this.sessionKey(versionId));
       if (stores.length > 1) {
         const history = transaction.objectStore(this.HISTORY_STORE_NAME);
-        history.put({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, savedAt: new Date().toISOString(), cards: copy.cards.length, session: copy });
+        history.put({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, savedAt: new Date().toISOString(), cards: copy.cards.length, versionId, session: copy });
         let kept = 0;
         history.openCursor(null, 'prev').onsuccess = event => {
           const cursor = event.target.result;
@@ -405,8 +485,8 @@ const StorageAdapter = {
     }
   },
 
-  async _prepareSessionCopy() {
-    const copy = JSON.parse(JSON.stringify(state.session));
+  async _prepareSessionCopy(session) {
+    const copy = JSON.parse(JSON.stringify(session));
     for (const card of copy.cards) {
       const src = getImageSrc(card);
       if (card.imageData || !src || !src.startsWith('blob:')) continue;
@@ -438,6 +518,9 @@ const StorageAdapter = {
     db.close();
     if (!record?.session) throw new Error('Version introuvable');
     state.session = record.session;
+    state.versionId = versionOfSession(record.session) ?? state.versionId;
+    state.session.meta.cubeVersion = state.versionId;
+    renderVersionSelect();
     state.imageMap = {};
     for (const card of state.session.cards) if (card.imageData) state.imageMap[card.imagePath] = card.imageData;
     state.ui.currentCardIndex = 0;
@@ -446,10 +529,10 @@ const StorageAdapter = {
     render();
   },
 
-  async loadIndexedDB() {
+  async loadIndexedDB(versionId) {
     const db = await this.openDB();
     const session = await new Promise((resolve, reject) => {
-      const request = db.transaction(this.STORE_NAME, 'readonly').objectStore(this.STORE_NAME).get('current');
+      const request = db.transaction(this.STORE_NAME, 'readonly').objectStore(this.STORE_NAME).get(this.sessionKey(versionId));
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
@@ -457,26 +540,26 @@ const StorageAdapter = {
     return session;
   },
 
-  async loadPersistent() {
+  async loadPersistent(versionId) {
     try {
-      const indexedSession = await this.loadIndexedDB();
+      const indexedSession = await this.loadIndexedDB(versionId);
       if (indexedSession?.cards?.length) return indexedSession;
     } catch { /* fallback localStorage */ }
-    return this.loadLocal();
+    return this.loadLocal(versionId);
   },
 
-  loadLocal() {
+  loadLocal(versionId) {
     try {
-      const raw = localStorage.getItem(this.KEY);
+      const raw = localStorage.getItem(this.localKey(versionId));
       return raw ? JSON.parse(raw) : null;
     } catch { return null; }
   },
 
-  clearLocal() {
-    localStorage.removeItem(this.KEY);
+  clearLocal(versionId = state.versionId) {
+    localStorage.removeItem(this.localKey(versionId));
     this.openDB().then(db => new Promise(resolve => {
       const transaction = db.transaction(this.STORE_NAME, 'readwrite');
-      transaction.objectStore(this.STORE_NAME).delete('current');
+      transaction.objectStore(this.STORE_NAME).delete(this.sessionKey(versionId));
       transaction.oncomplete = () => { db.close(); resolve(); };
       transaction.onerror = () => { db.close(); resolve(); };
     })).catch(() => {});
@@ -484,6 +567,7 @@ const StorageAdapter = {
 
   async exportJSON(embedImages = false) {
     const session = JSON.parse(JSON.stringify(state.session));
+    session.meta.cubeVersion = state.versionId;
     if (embedImages) {
       for (const card of session.cards) {
         const src = getImageSrc(card);
@@ -503,7 +587,7 @@ const StorageAdapter = {
     }
     downloadBlob(
       new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' }),
-      `cube-session-${session.meta.updatedAt}.json`
+      `cube-session-${session.meta.cubeVersion}-${session.meta.updatedAt}.json`
     );
     state.ui.unsaved = false;
     updateProgress();
@@ -714,6 +798,7 @@ const FocusView = {
     const notes = document.getElementById('focus-notes');
     notes.value = card.notes || '';
     autoResizeTextarea(notes);
+    window.requestAnimationFrame(() => autoResizeTextarea(notes));
 
   },
 
@@ -1274,6 +1359,73 @@ function render() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// VERSIONS DU CUBE
+// ═══════════════════════════════════════════════════════════════════
+
+function renderVersionSelect() {
+  const select = document.getElementById('version-select');
+  const latest = latestVersion();
+  select.innerHTML = '';
+  [...state.versions].reverse().forEach(version => {
+    const option = document.createElement('option');
+    option.value = version.id;
+    option.textContent = `${version.label}${version.date ? ` · ${version.date}` : ''}${version === latest ? ' (récente)' : ''}`;
+    select.appendChild(option);
+  });
+  select.value = state.versionId ?? latest.id;
+}
+
+let versionLoadToken = 0;
+
+// Ouvre la session sauvegardée de cette version, sinon une session vierge depuis son manifeste
+async function openVersion(versionId) {
+  const version = getVersion(versionId);
+  if (!version) return null;
+  const token = ++versionLoadToken;
+  state.versionId = version.id;
+  renderVersionSelect();
+  state.ui.currentCardIndex = 0;
+  state.ui.dimensionFilters = {};
+  state.ui.unsaved = false;
+  if (state.ui.view === 'focus') state.ui.view = 'gallery';
+
+  const saved = await StorageAdapter.loadPersistent(version.id);
+  if (token !== versionLoadToken) return null;
+  if (saved?.cards?.length) {
+    state.session = saved;
+    state.session.meta.cubeVersion = version.id;
+    if (state.session.cards.every(card => isStaticImagePath(card.imagePath))) sortDefaultCards(state.session.cards);
+    render();
+    updateSaveStatus();
+    StorageAdapter.saveLocal();
+    return 'restored';
+  }
+  try {
+    const session = await loadDefaultSession(version);
+    if (token !== versionLoadToken) return null;
+    state.session = session;
+    render();
+    updateSaveStatus();
+    StorageAdapter.saveLocal();
+    return 'new';
+  } catch (error) {
+    console.warn(`Images de la version ${version.id} indisponibles:`, error);
+    state.session = null;
+    render();
+    return 'error';
+  }
+}
+
+async function switchVersion(versionId) {
+  if (versionId === state.versionId) return;
+  const result = await openVersion(versionId);
+  const label = getVersion(versionId)?.label ?? versionId;
+  if (result === 'restored') toast(`Version ${label} : session restaurée ✓`);
+  else if (result === 'new') toast(`Version ${label} chargée ✓`);
+  else if (result === 'error') toast(`Images de la version ${label} indisponibles`, true);
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // EXPORT DIALOG
 // ═══════════════════════════════════════════════════════════════════
 
@@ -1313,7 +1465,9 @@ async function openHistory() {
       const item = document.createElement('div');
       item.className = 'history-item';
       const date = new Date(record.savedAt).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
-      item.innerHTML = `<div><strong>${date}</strong><small>${record.cards} carte(s)</small></div>`;
+      const versionId = record.versionId ?? versionOfSession(record.session);
+      const versionLabel = getVersion(versionId)?.label ?? versionId ?? '?';
+      item.innerHTML = `<div><strong>${date}</strong><small>Version ${escHtml(versionLabel)} · ${record.cards} carte(s)</small></div>`;
       const restore = document.createElement('button');
       restore.className = 'btn-secondary';
       restore.textContent = 'Restaurer';
@@ -1351,14 +1505,19 @@ async function init() {
   $json.addEventListener('change', e => {
     const f = e.target.files[0]; if (!f) return;
     StorageAdapter.importJSON(f).then(session => {
+      versionLoadToken++;
+      state.versionId = versionOfSession(session) ?? state.versionId;
+      session.meta = { ...session.meta, cubeVersion: state.versionId };
+      renderVersionSelect();
       state.session = session;
       state.ui.currentCardIndex = 0;
       render();
       const missing = session.cards.filter(c => !getImageSrc(c)).length;
+      const label = getVersion()?.label ?? state.versionId;
       toast(
         missing
-          ? `Session chargée. ${missing} image(s) manquante(s).\nUtilisez "⊕ Images" pour les ré-importer.`
-          : 'Session chargée ✓',
+          ? `Session chargée (version ${label}). ${missing} image(s) manquante(s).\nUtilisez "⊕ Images" pour les ré-importer.`
+          : `Session chargée (version ${label}) ✓`,
         false, 5000
       );
       StorageAdapter.saveLocal();
@@ -1369,7 +1528,7 @@ async function init() {
   // ── Header
   document.getElementById('btn-new-session').addEventListener('click', () => {
     if (state.session?.cards.length &&
-        !confirm('Créer une nouvelle session ? La session actuelle sera perdue si elle n\'a pas été exportée.')) return;
+        !confirm(`Créer une nouvelle session pour la version ${getVersion()?.label ?? ''} ? La session actuelle de cette version sera perdue si elle n'a pas été exportée.`)) return;
     state.session = SessionManager.createNew();
     state.imageMap = {};
     state.ui.currentCardIndex = 0;
@@ -1496,28 +1655,12 @@ async function init() {
     }
   });
 
-  // ── Restauration depuis localStorage
-  const saved = await StorageAdapter.loadPersistent();
-  if (saved?.cards?.length) {
-    state.session = saved;
-    if (state.session.cards.every(card => card.imagePath?.startsWith('images_cube/'))) {
-      sortDefaultCards(state.session.cards);
-    }
-    toast('Session précédente restaurée. Re-importez vos images si nécessaire.', false, 4500);
-    render();
-    StorageAdapter.saveLocal();
-  } else {
-    loadDefaultSession()
-      .then(session => {
-        state.session = session;
-        render();
-        StorageAdapter.saveLocal();
-      })
-      .catch(error => {
-        console.warn('Images par défaut indisponibles:', error);
-        render();
-      });
-  }
+  // ── Version du cube : la plus récente par défaut
+  state.versions = await loadVersions();
+  await StorageAdapter.migrateLegacy();
+  document.getElementById('version-select').addEventListener('change', e => switchVersion(e.target.value));
+  const result = await openVersion(latestVersion().id);
+  if (result === 'restored') toast('Session précédente restaurée. Re-importez vos images si nécessaire.', false, 4500);
   updateSaveStatus();
 }
 

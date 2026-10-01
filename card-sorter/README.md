@@ -44,6 +44,7 @@ Le fichier de session est le **cœur du système**. Il est à la fois :
 {
   "meta": {
     "version": "1.0",
+    "cubeVersion": "v2",
     "createdAt": "2026-08-13",
     "updatedAt": "2026-08-13",
     "author": "hbelcour",
@@ -95,6 +96,25 @@ Le fichier de session est le **cœur du système**. Il est à la fois :
 ```
 
 > **`imageData`** : optionnel. Si renseigné (base64), l'image est embarquée dans le JSON et le fichier devient autoportant (partageable sans les images séparées). Si `null`, l'app utilise `imagePath` relatif.
+
+> **`meta.cubeVersion`** : version du cube à laquelle appartient la session (voir ci-dessous). À l'import, l'app bascule automatiquement sur cette version. Pour un ancien fichier sans ce champ, la version est déduite du dossier des images (`images_cube/` → `v1`).
+
+### Versions du cube
+
+Le fichier `versions.json` liste les versions disponibles, par ordre chronologique. **La dernière est ouverte par défaut** ; le menu *Version* de l'en-tête permet d'ouvrir et trier une version précédente.
+
+```json
+{
+  "versions": [
+    { "id": "v1", "label": "V1", "date": "2026-08-14", "dir": "images_cube/" },
+    { "id": "v2", "label": "V2", "date": "2026-10-01", "dir": "images_cube_v2/" }
+  ]
+}
+```
+
+- Chaque version a sa propre sauvegarde locale (IndexedDB) : changer de version ne perd aucun tri.
+- L'historique indique la version de chaque sauvegarde et la restaure sur la bonne version.
+- **Ajouter une version** : copier les images numérotées dans un nouveau dossier (ex. `images_cube_v3/`), ajouter l'entrée en fin de `versions.json`, puis lancer `generate-card-list.ps1` à la racine du site pour générer son `manifest.json`.
 
 ### Dimensions configurables
 

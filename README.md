@@ -25,19 +25,22 @@ myMtgWebsite.github.io/
 │   ├── index.html                      # MTG Cube Sorter
 │   ├── app.js                          # Logique de tri, filtres et navigation
 │   ├── style.css                       # Interface de tri
-│   └── default-config.json             # Configuration par défaut
+│   ├── default-config.json             # Configuration par défaut
+│   ├── versions.json                   # Versions du cube (la dernière = défaut)
+│   ├── images_cube/                    # Images V1 + manifest.json
+│   └── images_cube_v2/                 # Images V2 + manifest.json
 ├── mcc-magic-custom-cube/
 │   ├── index.html                      # Page MCC (cube custom) — chargement dynamique
 │   ├── card-list.json                  # Manifeste des cartes (généré automatiquement)
 │   └── token-list.json                 # Manifeste des tokens (généré automatiquement)
 ├── mcc-magic-custom-cube_image/        # 📁 Source des images cartes MCC (PNG numérotées)
-│   ├── 1_Lenala Kindhearted Monstrosity.png
+│   ├── 1_Formless Call.png
 │   ├── ...
 │   └── 380_Whispering Falls.png
 ├── mcc-magic-custom-cube_image_token/   # 📁 Source des images tokens MCC (PNG numérotées)
-│   ├── 1_Angel.png
+│   ├── 1_Cat.png
 │   ├── ...
-│   └── 47_Treasure.png
+│   └── 39_Treasure.png
 ├── wp-content/
 │   ├── themes/twentytwenty/            # Thème WordPress TwentyTwenty v2.7
 │   │   ├── style.css
@@ -48,7 +51,7 @@ myMtgWebsite.github.io/
 │       ├── 2024/10/                    # Images cartes Jeko
 │       └── 2025/02/                    # Image bannière MCC
 ├── wp-includes/css/                    # CSS WordPress core
-├── generate-card-list.ps1              # Script de régénération des manifestes MCC (cartes + tokens)
+├── generate-card-list.ps1              # Régénération des manifestes MCC (cartes + tokens) et Card Sorter (une par version)
 └── README.md
 ```
 
@@ -76,7 +79,15 @@ La page MCC charge **automatiquement** les cartes et tokens depuis deux dossiers
    ```
 3. **Commit & Push** sur GitHub
 
-Le script génère `card-list.json` (cartes) et `token-list.json` (tokens) avec un **tri numérique** basé sur le préfixe du nom de fichier.
+Le script génère `card-list.json` (cartes) et `token-list.json` (tokens) avec un **tri numérique** basé sur le préfixe du nom de fichier. Il régénère aussi le `manifest.json` de chaque version déclarée dans `card-sorter/versions.json`.
+
+### Nouvelle version du cube dans le Card Sorter
+
+1. Copier les nouvelles images dans `card-sorter/images_cube_vN/`
+2. Ajouter `{ "id": "vN", "label": "VN", "date": "AAAA-MM-JJ", "dir": "images_cube_vN/" }` **en fin** de `card-sorter/versions.json`
+3. Lancer `generate-card-list.ps1`, puis commit & push
+
+Les versions précédentes restent disponibles dans le menu *Version* ; la plus récente est ouverte par défaut.
 
 ### Convention de nommage des images
 

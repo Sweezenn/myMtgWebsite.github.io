@@ -64,8 +64,9 @@
       <h2>1. Demarrer</h2>
       <ol class="steps">
         <li>Ouvrez <a href="card-sorter/index.html">Card Sorter</a>.</li>
-        <li>Les cartes du cube sont chargees automatiquement par defaut.</li>
-        <li>Si une session precedente existe, elle est restauree automatiquement.</li>
+        <li>Les cartes du cube sont chargees automatiquement par defaut, dans la <strong>version la plus recente</strong>.</li>
+        <li>Le menu <strong>Version</strong> de l'en-tete permet d'ouvrir et de trier une version precedente du cube. Chaque version a sa propre sauvegarde : changer de version ne perd aucun tri.</li>
+        <li>Si une session precedente existe pour la version ouverte, elle est restauree automatiquement.</li>
         <li>Cliquez sur une carte pour ouvrir son detail.</li>
       </ol>
       <div class="tip"><strong>Important :</strong> le travail reste dans le navigateur. Il n'y a pas de compte ni de serveur necessaire.</div>
@@ -113,7 +114,7 @@
 
     <section id="historique">
       <h2>6. Historique des sauvegardes</h2>
-      <p>Le bouton <strong>Historique</strong> conserve les dix dernieres versions locales. Chaque ligne indique sa date et le nombre de cartes.</p>
+      <p>Le bouton <strong>Historique</strong> conserve les dix dernieres versions locales. Chaque ligne indique sa date, la version du cube et le nombre de cartes. Restaurer une sauvegarde rebascule automatiquement sur sa version du cube.</p>
       <ol class="steps">
         <li>Ouvrez <strong>Historique</strong>.</li>
         <li>Choisissez une version avec <strong>Restaurer</strong>.</li>
@@ -134,9 +135,9 @@
       <h3>Importer des images</h3>
       <p><strong>Images</strong> permet d'ajouter des fichiers locaux. Les doublons sont ignores. Les images sont conservees dans IndexedDB pour la sauvegarde automatique.</p>
       <h3>Charger une session</h3>
-      <p><strong>Charger</strong> accepte un fichier JSON. Un JSON avec images integrees est autonome ; un JSON leger necessite de recharger les images correspondantes.</p>
+      <p><strong>Charger</strong> accepte un fichier JSON. Un JSON avec images integrees est autonome ; un JSON leger necessite de recharger les images correspondantes. La version du cube enregistree dans le fichier est selectionnee automatiquement.</p>
       <h3>Sauver une session</h3>
-      <p><strong>Sauver</strong> demande si les images doivent etre incluses :</p>
+      <p><strong>Sauver</strong> demande si les images doivent etre incluses. Le fichier exporte contient la version du cube (<code>meta.cubeVersion</code>) et son nom l'indique, par exemple <code>cube-session-v2-2026-10-01.json</code>.</p>
       <ul>
         <li><strong>OK :</strong> JSON autonome, plus volumineux mais partageable.</li>
         <li><strong>Annuler :</strong> JSON leger, les images restent externes.</li>

@@ -1,5 +1,5 @@
 # generate-card-list.ps1
-# Script de regeneration des manifestes d'images MCC (cartes + tokens)
+# Script de regeneration des manifestes d'images MCC (cartes + tokens) et Card Sorter (une par version)
 # Usage : powershell -ExecutionPolicy Bypass -File .\generate-card-list.ps1
 # Ce script scanne les dossiers d'images et genere les JSON correspondants
 # Les images en paysage (largeur > hauteur) sont automatiquement marquees rotate:true
@@ -46,4 +46,19 @@ if (Test-Path $tokenDir) {
     Export-Manifest $tokenDir $tokenOut "token-list.json"
 } else {
     Write-Host "Dossier tokens non trouve, token-list.json non genere."
+}
+
+# --- Card Sorter : un manifest.json par version declaree dans card-sorter/versions.json ---
+$sorterDir = Join-Path $scriptDir "card-sorter"
+$versionsFile = Join-Path $sorterDir "versions.json"
+if (Test-Path $versionsFile) {
+    $versions = (Get-Content $versionsFile -Raw -Encoding UTF8 | ConvertFrom-Json).versions
+    foreach ($version in $versions) {
+        $versionDir = Join-Path $sorterDir $version.dir
+        if (-not (Test-Path $versionDir)) { Write-Host "Version $($version.id) : dossier introuvable $versionDir"; continue }
+        $names = @(Get-SortedImages $versionDir | ForEach-Object { $_.Name })
+        $json = ConvertTo-Json -InputObject $names -Compress
+        [System.IO.File]::WriteAllText((Join-Path $versionDir "manifest.json"), $json, [System.Text.UTF8Encoding]::new($false))
+        Write-Host "Card Sorter $($version.id) : $($names.Count) images -> $($version.dir)manifest.json"
+    }
 }

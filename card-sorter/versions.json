@@ -1,0 +1,6 @@
+{
+  "versions": [
+    { "id": "v1", "label": "V1", "date": "2026-08-14", "dir": "images_cube/" },
+    { "id": "v2", "label": "V2", "date": "2026-10-01", "dir": "images_cube_v2/" }
+  ]
+}
