@@ -361,7 +361,7 @@ async function loadDefaultSession(version) {
   session.meta.description = `Cube ${version.label}`;
   session.cards = sortDefaultCards(imageNames.map((imageName, index) => ({
     id:              `default_card_${String(index + 1).padStart(3, '0')}`,
-    name:            imageName.replace(/\.[^.]+$/, '').replace(/^\d+_/, '').replace(/[-_]+/g, ' '),
+    name:            imageName.split('/').pop().replace(/\.[^.]+$/, '').replace(/^\d+_/, '').replace(/[-_]+/g, ' '),
     imagePath:       `${version.dir}${imageName}`,
     imageData:       null,
     classifications: {},

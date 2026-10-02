@@ -53,7 +53,8 @@ $sorterDir = Join-Path $scriptDir "card-sorter"
 $versionsFile = Join-Path $sorterDir "versions.json"
 if (Test-Path $versionsFile) {
     $versions = (Get-Content $versionsFile -Raw -Encoding UTF8 | ConvertFrom-Json).versions
-    foreach ($version in $versions) {
+    # Versions archivees : manifest fige (peut pointer vers les images d'une autre version)
+    foreach ($version in ($versions | Where-Object { -not $_.archived })) {
         $versionDir = Join-Path $sorterDir $version.dir
         if (-not (Test-Path $versionDir)) { Write-Host "Version $($version.id) : dossier introuvable $versionDir"; continue }
         $names = @(Get-SortedImages $versionDir | ForEach-Object { $_.Name })

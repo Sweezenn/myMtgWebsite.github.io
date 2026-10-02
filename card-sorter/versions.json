@@ -1,6 +1,9 @@
 {
   "versions": [
-    { "id": "v1", "label": "V1", "date": "2026-08-14", "dir": "images_cube/" },
+    { "id": "v0.1", "label": "V0.1", "date": "2026-03-19", "dir": "images_cube_v0.1/", "archived": true },
+    { "id": "v0.2", "label": "V0.2", "date": "2026-03-31", "dir": "images_cube_v0.2/", "archived": true },
+    { "id": "v0.3", "label": "V0.3", "date": "2026-04-09", "dir": "images_cube_v0.3/", "archived": true },
+    { "id": "v1", "label": "V1", "date": "2026-08-14", "dir": "images_cube/", "archived": true },
     { "id": "v2", "label": "V2", "date": "2026-10-01", "dir": "images_cube_v2/" }
   ]
 }

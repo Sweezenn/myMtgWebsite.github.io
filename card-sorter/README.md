@@ -106,7 +106,10 @@ Le fichier `versions.json` liste les versions disponibles, par ordre chronologiq
 ```json
 {
   "versions": [
-    { "id": "v1", "label": "V1", "date": "2026-08-14", "dir": "images_cube/" },
+    { "id": "v0.1", "label": "V0.1", "date": "2026-03-19", "dir": "images_cube_v0.1/", "archived": true },
+    { "id": "v0.2", "label": "V0.2", "date": "2026-03-31", "dir": "images_cube_v0.2/", "archived": true },
+    { "id": "v0.3", "label": "V0.3", "date": "2026-04-09", "dir": "images_cube_v0.3/", "archived": true },
+    { "id": "v1", "label": "V1", "date": "2026-08-14", "dir": "images_cube/", "archived": true },
     { "id": "v2", "label": "V2", "date": "2026-10-01", "dir": "images_cube_v2/" }
   ]
 }
@@ -115,6 +118,7 @@ Le fichier `versions.json` liste les versions disponibles, par ordre chronologiq
 - Chaque version a sa propre sauvegarde locale (IndexedDB) : changer de version ne perd aucun tri.
 - L'historique indique la version de chaque sauvegarde et la restaure sur la bonne version.
 - **Ajouter une version** : copier les images numérotées dans un nouveau dossier (ex. `images_cube_v3/`), ajouter l'entrée en fin de `versions.json`, puis lancer `generate-card-list.ps1` à la racine du site pour générer son `manifest.json`.
+- Les versions `archived` ne sont plus regénérées par le script : leur `manifest.json` est figé. Les V0.x, reconstruites depuis l'historique Git de la page MCC (une version gardée seulement si au moins 10 cartes changent), référencent les images inchangées d'une version précédente (`../images_cube_v0.1/…`) au lieu de les dupliquer.
 
 ### Dimensions configurables
 
