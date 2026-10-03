@@ -106,6 +106,8 @@ Le fichier `versions.json` liste les versions disponibles, par ordre chronologiq
 ```json
 {
   "versions": [
+    { "id": "v0.0.1", "label": "V0.0.1", "date": "2024-10-07", "dir": "images_cube_v0.0.1/", "archived": true },
+    …
     { "id": "v0.1", "label": "V0.1", "date": "2026-03-19", "dir": "images_cube_v0.1/", "archived": true },
     { "id": "v0.2", "label": "V0.2", "date": "2026-03-31", "dir": "images_cube_v0.2/", "archived": true },
     { "id": "v0.3", "label": "V0.3", "date": "2026-04-09", "dir": "images_cube_v0.3/", "archived": true },
@@ -119,6 +121,7 @@ Le fichier `versions.json` liste les versions disponibles, par ordre chronologiq
 - L'historique indique la version de chaque sauvegarde et la restaure sur la bonne version.
 - **Ajouter une version** : copier les images numérotées dans un nouveau dossier (ex. `images_cube_v3/`), ajouter l'entrée en fin de `versions.json`, puis lancer `generate-card-list.ps1` à la racine du site pour générer son `manifest.json`.
 - Les versions `archived` ne sont plus regénérées par le script : leur `manifest.json` est figé. Les V0.x, reconstruites depuis l'historique Git de la page MCC (une version gardée seulement si au moins 10 cartes changent), référencent les images inchangées d'une version précédente (`../images_cube_v0.1/…`) au lieu de les dupliquer.
+- Les V0.0.x viennent de l'ancienne page MCC (période WordPress, images `wp-content/uploads/`), converties en WebP pour limiter le poids du site (limite GitHub Pages : 1 Go).
 
 ### Dimensions configurables
 

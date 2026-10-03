@@ -1,5 +1,9 @@
 {
   "versions": [
+    { "id": "v0.0.1", "label": "V0.0.1", "date": "2024-10-07", "dir": "images_cube_v0.0.1/", "archived": true },
+    { "id": "v0.0.2", "label": "V0.0.2", "date": "2025-02-23", "dir": "images_cube_v0.0.2/", "archived": true },
+    { "id": "v0.0.3", "label": "V0.0.3", "date": "2025-11-17", "dir": "images_cube_v0.0.3/", "archived": true },
+    { "id": "v0.0.4", "label": "V0.0.4", "date": "2025-11-23", "dir": "images_cube_v0.0.4/", "archived": true },
     { "id": "v0.1", "label": "V0.1", "date": "2026-03-19", "dir": "images_cube_v0.1/", "archived": true },
     { "id": "v0.2", "label": "V0.2", "date": "2026-03-31", "dir": "images_cube_v0.2/", "archived": true },
     { "id": "v0.3", "label": "V0.3", "date": "2026-04-09", "dir": "images_cube_v0.3/", "archived": true },
